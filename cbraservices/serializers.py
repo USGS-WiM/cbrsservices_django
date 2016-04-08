@@ -19,20 +19,21 @@ class CaseFileSerializer(serializers.ModelSerializer):
 
 
 class CaseSerializer(serializers.ModelSerializer):
-    # def get_case_files(self, obj):
-    #     vals = obj.case_files.values()
-    #     if platform.system() == 'Windows':
-    #         cfs = []
-    #         for val in vals:
-    #             cf0 = val['file']
-    #             cf1 = cf0.replace("/", "\\")
-    #             cfs.append(cf1)
-    #         return cfs
-    #     else:
-    #         return vals
 
-    #case_files = serializers.HyperlinkedRelatedField(many=True, read_only=True, view_name='casefile-detail')
-    #case_files = serializers.SerializerMethodField()
+    def validate(self, data):
+        """
+        Ensure that no user is used by more than one of the following fields: Analyst, QC_Reviewer, FWS_Reviewer
+        """
+        an = self.initial_data.get('analyst', None)
+        qc = self.initial_data.get('qc_reviewer', None)
+        fws = self.initial_data.get('fws_reviewer', None)
+        if an is not None and qc is not None and an == qc:
+            raise serializers.ValidationError("analyst cannot be the same as qc_reviewer")
+        if an is not None and fws is not None and an == fws:
+            raise serializers.ValidationError("analyst cannot be the same as fws_reviewer")
+        if qc is not None and fws is not None and qc == fws:
+            raise serializers.ValidationError("qc_reviewer cannot be the same as fws_reviewer")
+        return data
 
     analyst_string = serializers.StringRelatedField(source='analyst')
     qc_reviewer_string = serializers.StringRelatedField(source='qc_reviewer')
@@ -43,13 +44,13 @@ class CaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Case
-        fields = ('id', 'case_number', 'status', 'request_date', 'requester', 'property', 'cbrs_unit',
+        fields = ('id', 'case_number', 'case_hash', 'status', 'request_date', 'requester', 'property', 'cbrs_unit',
                   'cbrs_unit_string', 'map_number', 'map_number_string', 'cbrs_map_date', 'determination',
                   'determination_string', 'prohibition_date', 'distance', 'fws_fo_received_date',
                   'fws_hq_received_date', 'final_letter_date', 'close_date', 'final_letter_recipient', 'analyst',
                   'analyst_string', 'analyst_signoff_date', 'qc_reviewer', 'qc_reviewer_string',
                   'qc_reviewer_signoff_date', 'fws_reviewer', 'fws_reviewer_string', 'fws_reviewer_signoff_date',
-                  'priority', 'comments', 'tags', 'case_files')
+                  'priority', 'comments', 'tags', 'case_files', 'created_by', 'modified_by',)
         read_only_fields = ('case_number', 'status', 'comments', 'tags', 'case_files',)
 
 

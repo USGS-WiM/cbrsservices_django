@@ -1,5 +1,5 @@
 from django.conf.urls import patterns, url, include
-from cbraservices import views
+from cbraservices import views, receivers
 from rest_framework.routers import DefaultRouter
 
 
