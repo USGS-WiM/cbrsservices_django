@@ -1,5 +1,3 @@
-import platform
-import os
 from datetime import datetime
 from django.core import validators
 from django.db import models
@@ -29,8 +27,6 @@ class HistoryModel(models.Model):
     An abstract base class model to track creation, modification, and data change history.
     """
 
-    # TODO figure out how to auto set the created_by and modified_by fields
-
     created_date = models.DateField(default=datetime.now, null=True, blank=True, db_index=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, db_index=True,
                                    related_name='%(class)s_creator')
@@ -41,6 +37,7 @@ class HistoryModel(models.Model):
 
     class Meta:
         abstract = True
+        default_permissions = ('add', 'change', 'delete', 'view')
 
 
 class AddressModel(HistoryModel):
@@ -83,14 +80,19 @@ class Case(HistoryModel):
             return 'Final'
         elif self.fws_reviewer_signoff_date:
             return 'Awaiting Final Letter'
-        elif self.determination:
+        elif self.qc_reviewer_signoff_date:
             return 'Awaiting FWS Review'
         elif self.analyst_signoff_date:
             return 'Awaiting QC'
         else:
             return 'Received'
 
+    # for new records, there is a custom signal receiver in the receivers.py file listening for
+    # the post_save event signal, and when the post_save's 'created' boolean is true,
+    # this custom receiver will create the case hash (public ID) and send a confirmation email
+
     case_number = property(_get_id)
+    case_hash = models.CharField(max_length=255, blank=True)
     status = property(_get_status)
     request_date = models.DateField(default=datetime.now().date())
     requester = models.ForeignKey('Requester', related_name='cases')

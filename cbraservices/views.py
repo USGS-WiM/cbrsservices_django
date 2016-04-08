@@ -7,6 +7,7 @@ from rest_framework_extensions.cache.mixins import CacheResponseMixin
 from rest_framework_extensions.cache.mixins import ListCacheResponseMixin
 from cbraservices.serializers import *
 from cbraservices.models import *
+from cbraservices.permissions import *
 
 
 ########################################################################################################################
@@ -28,13 +29,35 @@ from cbraservices.models import *
 
 ######
 #
+#  Abstract Base Classes
+#
+######
+
+
+class HistoryViewSet(viewsets.ModelViewSet):
+    """
+    This class will automatically assign the User ID to the created_by and modified_by history fields when appropriate
+    """
+
+    permission_classes = (IsStaff,)
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+        serializer.save(modified_by=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save(modified_by=self.request.user)
+
+
+######
+#
 #  Determinations
 #
 ######
 
 
-class CaseViewSet(viewsets.ModelViewSet):
-    queryset = Case.objects.all()
+class CaseViewSet(HistoryViewSet):
+    # queryset = Case.objects.all()
     # serializer_class = CaseSerializer
     # permission_classes = (permissions.IsAuthenticated,)
 
@@ -46,8 +69,16 @@ class CaseViewSet(viewsets.ModelViewSet):
         else:
             return CaseSerializer
 
+    def get_queryset(self):
+        queryset = Case.objects.all()
+        # filter by case hash, exact
+        case_hash = self.request.query_params.get('case_hash', None)
+        if case_hash is not None:
+            queryset = queryset.filter(case_hash__exact=case_hash)
+        return queryset
 
-class CaseFileViewSet(viewsets.ModelViewSet):
+
+class CaseFileViewSet(HistoryViewSet):
     # queryset = CaseFile.objects.all()
     serializer_class = CaseFileSerializer
     # permission_classes = (permissions.IsAuthenticated,)
@@ -76,7 +107,7 @@ class CaseFileViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class PropertyViewSet(viewsets.ModelViewSet):
+class PropertyViewSet(HistoryViewSet):
     # queryset = Property.objects.all()
     serializer_class = PropertySerializer
     # permission_classes = (permissions.IsAuthenticated,)
@@ -91,7 +122,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class RequesterViewSet(viewsets.ModelViewSet):
+class RequesterViewSet(HistoryViewSet):
     # queryset = Requester.objects.all()
     serializer_class = RequesterSerializer
     # permission_classes = (permissions.IsAuthenticated,)
@@ -113,7 +144,7 @@ class RequesterViewSet(viewsets.ModelViewSet):
 ######
 
 
-class CaseTagViewSet(viewsets.ModelViewSet):
+class CaseTagViewSet(HistoryViewSet):
     # queryset = CaseTag.objects.all()
     serializer_class = CaseTagSerializer
     # permission_classes = (permissions.IsAuthenticated,)
@@ -128,7 +159,7 @@ class CaseTagViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class TagViewSet(viewsets.ModelViewSet):
+class TagViewSet(HistoryViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     # permission_classes = (permissions.IsAuthenticated,)
@@ -141,7 +172,7 @@ class TagViewSet(viewsets.ModelViewSet):
 ######
 
 
-class CommentViewSet(viewsets.ModelViewSet):
+class CommentViewSet(HistoryViewSet):
     # queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     # permission_classes = (permissions.IsAuthenticated,)
@@ -163,19 +194,19 @@ class CommentViewSet(viewsets.ModelViewSet):
 ######
 
 
-class DeterminationViewSet(viewsets.ModelViewSet):
+class DeterminationViewSet(HistoryViewSet):
     queryset = Determination.objects.all()
     serializer_class = DeterminationSerializer
     # permission_classes = (permissions.IsAuthenticated,)
 
 
-class SystemUnitViewSet(CacheResponseMixin, viewsets.ModelViewSet):
+class SystemUnitViewSet(CacheResponseMixin, HistoryViewSet):
     queryset = SystemUnit.objects.all()
     serializer_class = SystemUnitSerializer
     # permission_classes = (permissions.IsAuthenticated,)
 
 
-class SystemUnitProhibitionDateViewSet(viewsets.ModelViewSet):
+class SystemUnitProhibitionDateViewSet(HistoryViewSet):
     # queryset = SystemUnitProhibitionDate.objects.all()
     serializer_class = SystemUnitProhibitionDateSerializer
     # permission_classes = (permissions.IsAuthenticated,)
@@ -190,13 +221,13 @@ class SystemUnitProhibitionDateViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class SystemUnitMapViewSet(viewsets.ModelViewSet):
+class SystemUnitMapViewSet(HistoryViewSet):
     queryset = SystemUnitMap.objects.all()
     serializer_class = SystemUnitMapSerializer
     # permission_classes = (permissions.IsAuthenticated,)
 
 
-class SystemMapViewSet(viewsets.ModelViewSet):
+class SystemMapViewSet(HistoryViewSet):
     # queryset = SystemMap.objects.all()
     serializer_class = SystemMapSerializer
     # permission_classes = (permissions.IsAuthenticated,)
@@ -211,7 +242,7 @@ class SystemMapViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class FieldOfficeViewSet(viewsets.ModelViewSet):
+class FieldOfficeViewSet(HistoryViewSet):
     queryset = FieldOffice.objects.all()
     serializer_class = FieldOfficeSerializer
     # permission_classes = (permissions.IsAuthenticated,)
@@ -224,7 +255,7 @@ class FieldOfficeViewSet(viewsets.ModelViewSet):
 ######
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(HistoryViewSet):
     # permission_classes = (permissions.IsAuthenticated,)
     serializer_class = UserSerializer
 
