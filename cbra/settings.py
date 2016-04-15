@@ -85,6 +85,7 @@ DEBUG = CONFIG.get('general', 'DEBUG')
 
 ALLOWED_HOSTS = CONFIG.get('general', 'ALLOWED_HOSTS')
 
+USE_X_FORWARDED_HOST = True
 
 # Application definition
 
