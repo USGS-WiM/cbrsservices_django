@@ -138,7 +138,7 @@ class CaseFile(HistoryModel):
 
     def casefile_location(instance, filename):
         """Returns a custom location for the case file, in a folder named for its case"""
-        #print(instance.uploader_id)
+        # print(instance.uploader_id)
         if not instance.uploader_id:
             return 'casefiles/{0}/requester/{1}'.format(instance.case, filename)
         else:
@@ -156,59 +156,6 @@ class CaseFile(HistoryModel):
     class Meta:
         db_table = "cbra_casefile"
         unique_together = ("file", "case")
-
-
-# class CaseFile(HistoryModel):
-#     """
-#     File "attached" to a case to assist with determination, which can be uploaded by either
-#     the requester or by CBRA staff. Can be a map, picture, letter, or any number of things.
-#     For easier management, file sizes will be limited to ~2MB, and file types will be limited to the following:
-#     txt, pdf, doc, jpeg, png, gif, tif, bmp, shp, zip, (others?).
-#     """
-#
-#     def _get_filename(self):
-#         """Returns the name of the file"""
-#         return '%s' % str(self.file).split('/')[-1]
-#
-#     @staticmethod
-#     def get_upload_to():
-#         """Returns the upload_to location with the proper operating system path separator"""
-#         # if platform.system() == 'Windows':
-#         #     return 'cbraservices.DatabaseFile\\bytes\\filename\\mimetype'
-#         # else:
-#         #     return 'cbraservices.DatabaseFile/bytes/filename/mimetype'
-#         print(os.path.sep)
-#         up = 'cbraservices.DatabaseFile' + os.path.sep + 'bytes' + os.path.sep + 'filename' + os.path.sep + 'mimetype'
-#         print(up)
-#         return '%s' % up
-#
-#     name = property(_get_filename)
-#     file = models.FileField(upload_to='cbraservices.DatabaseFile/bytes/filename/mimetype') #, blank=True, null=True)
-#     case = models.ForeignKey('Case', related_name='case_files')
-#     uploaded_date = models.DateField(auto_now_add=True, null=True, blank=True)
-#
-#     def __str__(self):
-#         return str(self.name)
-#
-#     class Meta:
-#         db_table = "cbra_casefile"
-#         unique_together = ("file", "case")
-#
-#
-# class DatabaseFile(models.Model):
-#     """
-#     Table to store files in the database, rather than in the server file system.
-#     """
-#
-#     bytes = models.TextField()
-#     filename = models.CharField(max_length=255)
-#     mimetype = models.CharField(max_length=255)
-#
-#     def __str__(self):
-#         return str(self.filename)
-#
-#     class Meta:
-#         db_table = "cbra_databasefile"
 
 
 class Property(AddressModel):
@@ -311,6 +258,7 @@ class Comment(HistoryModel):
     class Meta:
         db_table = "cbra_comment"
         unique_together = ("comment", "case")
+        ordering = ['-id']
 
 
 ######

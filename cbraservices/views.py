@@ -75,6 +75,14 @@ class CaseViewSet(HistoryViewSet):
         case_hash = self.request.query_params.get('case_hash', None)
         if case_hash is not None:
             queryset = queryset.filter(case_hash__exact=case_hash)
+        # filter by property ID, exact
+        property = self.request.query_params.get('property', None)
+        if property is not None:
+            queryset = queryset.filter(property__exact=property)
+        # filter by requester ID, exact
+        requester = self.request.query_params.get('requester', None)
+        if requester is not None:
+            queryset = queryset.filter(requester__exact=requester)
         return queryset
 
 
@@ -119,6 +127,26 @@ class PropertyViewSet(HistoryViewSet):
         case_id = self.request.query_params.get('case', None)
         if case_id is not None:
             queryset = queryset.filter(cases__exact=case_id)
+        # filter by street, exact
+        street = self.request.query_params.get('street', None)
+        if street is not None:
+            queryset = queryset.filter(street__exact=street)
+        # filter by unit, exact
+        unit = self.request.query_params.get('unit', None)
+        if unit is not None:
+            queryset = queryset.filter(unit__exact=unit)
+        # filter by city, exact
+        city = self.request.query_params.get('city', None)
+        if city is not None:
+            queryset = queryset.filter(city__exact=city)
+        # filter by state, exact
+        state = self.request.query_params.get('state', None)
+        if state is not None:
+            queryset = queryset.filter(state__exact=state)
+        # filter by zipcode, exact
+        zipcode = self.request.query_params.get('zipcode', None)
+        if zipcode is not None:
+            queryset = queryset.filter(zipcode__exact=zipcode)
         return queryset
 
 
@@ -134,6 +162,46 @@ class RequesterViewSet(HistoryViewSet):
         case_id = self.request.query_params.get('case', None)
         if case_id is not None:
             queryset = queryset.filter(cases__exact=case_id)
+        # filter by salutation, exact
+        salutation = self.request.query_params.get('salutation', None)
+        if salutation is not None:
+            queryset = queryset.filter(salutation__exact=salutation)
+        # filter by first_name, exact
+        first_name = self.request.query_params.get('first_name', None)
+        if first_name is not None:
+            queryset = queryset.filter(first_name__exact=first_name)
+        # filter by last_name, exact
+        last_name = self.request.query_params.get('last_name', None)
+        if last_name is not None:
+            queryset = queryset.filter(last_name__exact=last_name)
+        # filter by organization, exact
+        organization = self.request.query_params.get('organization', None)
+        if organization is not None:
+            queryset = queryset.filter(organization__exact=organization)
+        # filter by email, exact
+        email = self.request.query_params.get('email', None)
+        if email is not None:
+            queryset = queryset.filter(email__exact=email)
+        # filter by street, exact
+        street = self.request.query_params.get('street', None)
+        if street is not None:
+            queryset = queryset.filter(street__exact=street)
+        # filter by unit, exact
+        unit = self.request.query_params.get('unit', None)
+        if unit is not None:
+            queryset = queryset.filter(unit__exact=unit)
+        # filter by city, exact
+        city = self.request.query_params.get('city', None)
+        if city is not None:
+            queryset = queryset.filter(city__exact=city)
+        # filter by state, exact
+        state = self.request.query_params.get('state', None)
+        if state is not None:
+            queryset = queryset.filter(state__exact=state)
+        # filter by zipcode, exact
+        zipcode = self.request.query_params.get('zipcode', None)
+        if zipcode is not None:
+            queryset = queryset.filter(zipcode__exact=zipcode)
         return queryset
 
 

@@ -113,10 +113,12 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    created_by_string = serializers.StringRelatedField(source='created_by')
 
     class Meta:
         model = Comment
-        fields = ('id', 'comment', 'case',)
+        fields = ('id', 'comment', 'case', 'created_by_string', 'created_date',)
+        read_only_fields = ('created_by_string', 'created_date',)
 
 
 ######

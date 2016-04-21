@@ -1,6 +1,6 @@
 import hashlib
 import base64
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from cbraservices import models
@@ -22,18 +22,20 @@ def _get_hash(id):
 @receiver(post_save, sender=models.Case)
 def case_post_save(sender, **kwargs):
     if kwargs['created']:
+
+        # create and assign the case ID hash
         case = kwargs['instance']
         case.case_hash = _get_hash(case.id)
         case.save()
 
-        # TODO: send email confirmation!
-        # https://docs.djangoproject.com/en/1.8/topics/email/
-        # Mail is sent using the SMTP host and port specified in the EMAIL_HOST and EMAIL_PORT settings.
-        # The EMAIL_HOST_USER and EMAIL_HOST_PASSWORD settings, if set, are used to authenticate to the SMTP server,
-        # and the EMAIL_USE_TLS and EMAIL_USE_SSL settings control whether a secure connection is used.
-
+        # construct and send the confirmation email
         subject = "CBRA Determination Request Confirmation"
-        message = "Your request has been submitted. Here is your case ID: " + case.case_hash
-        from_address = "astephensonusgs@gmail.com"
-        to_addresses_list = ["astephenson@usgs.gov"]
-        send_mail(subject, message, from_address, to_addresses_list, fail_silently=False)
+        body = "Your request has been submitted. Here is your case ID: " + case.case_hash
+        from_address = "admin@cbra.fws.gov"
+        to_addresses_list = [case.requester.email, ]
+        bcc_addresses_list = ["astephenson@usgs.gov", ]
+        reply_to_list = None
+        headers = None  # {'Message-ID': 'foo'}
+        #send_mail(subject, message, from_address, to_addresses_list, fail_silently=False)
+        email = EmailMessage(subject, body, from_address, to_addresses_list, bcc_addresses_list, reply_to_list, headers)
+        email.send(fail_silently=False)
