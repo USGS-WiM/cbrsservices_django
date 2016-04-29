@@ -1,4 +1,8 @@
 import platform
+import magic
+from django.template.defaultfilters import filesizeformat
+from django.utils.translation import ugettext_lazy as _
+from django.conf import settings
 from rest_framework import serializers
 from cbraservices.models import *
 
@@ -11,6 +15,33 @@ from cbraservices.models import *
 
 
 class CaseFileSerializer(serializers.ModelSerializer):
+
+    def validate(self, data):
+        file = self.initial_data.get('file', None)
+        if file is not None:
+            # check the file type, but don't trust the request's Content-Type since it's easy to spoof, instead
+            # use python-magic (https://github.com/ahupp/python-magic and https://pypi.python.org/pypi/python-magic/)
+            # which identifies file types by checking their headers according to a predefined list of file types.
+            # we need to test for the host platform before we can initialize the Magic reader, since python-magic
+            # must be manually configured on Windows after installation, but is automatically added to the system path
+            # on Linux during installation; the magic_file shouldn't need to be explicitly referenced on Linux
+            filemagic = None
+            if platform.system() == 'Windows':
+                magic_file = "C:\Program Files (x86)\GnuWin32\share\misc\magic"
+                filemagic = magic.Magic(magic_file=magic_file, mime=True)
+            else:
+                filemagic = magic.Magic(mime=True)
+            filetype = filemagic.from_buffer(file.read()).decode('utf-8')
+            if filetype in settings.CONTENT_TYPES:
+                # check the file size
+                if file.size > settings.MAX_UPLOAD_SIZE:
+                    raise serializers.ValidationError(_('Please keep filesize under %s. Current filesize %s') % (
+                        filesizeformat(settings.MAX_UPLOAD_SIZE), filesizeformat(file.size)))
+                else:
+                    return data
+            else:
+                raise serializers.ValidationError(_('File type is not supported'))
+        return data
 
     class Meta:
         model = CaseFile

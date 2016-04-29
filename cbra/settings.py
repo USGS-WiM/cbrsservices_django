@@ -244,4 +244,4 @@ CONTENT_TYPES = ['application/msword', 'application/vnd.openxmlformats-officedoc
 # 100MB 104857600
 # 250MB - 262144000
 # 500MB - 524288000
-MAX_UPLOAD_SIZE = "2621440"
+MAX_UPLOAD_SIZE = 2621440

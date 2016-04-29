@@ -39,7 +39,7 @@ class HistoryViewSet(viewsets.ModelViewSet):
     This class will automatically assign the User ID to the created_by and modified_by history fields when appropriate
     """
 
-    permission_classes = (IsStaff,)
+    permission_classes = (IsActive,)
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
@@ -93,7 +93,7 @@ class CaseFileViewSet(HistoryViewSet):
     parser_classes = (MultiPartParser, FormParser,)
 
     def perform_create(self, serializer):
-        print(self.request.user)
+        # print(self.request.user)
 
         def get_user():
             if self.request.user.is_anonymous():
