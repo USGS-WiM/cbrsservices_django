@@ -115,6 +115,8 @@ class Case(HistoryModel):
     fws_reviewer = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='fws_reviewer', null=True, blank=True)
     fws_reviewer_signoff_date = models.DateField(null=True, blank=True)
     priority = models.BooleanField(default=False)
+    on_hold = models.BooleanField(default=False)
+    invalid = models.BooleanField(default=False)
     tags = models.ManyToManyField('Tag', through='CaseTag', related_name='cases')
 
     def __str__(self):

@@ -198,14 +198,14 @@ USE_TZ = False
 
 STATIC_ROOT = os.path.join(PROJECT_PATH, 'static')
 STATIC_PATH = os.path.join(PROJECT_PATH, 'static/staticfiles')
-STATIC_URL = '/cbra/static/'
+STATIC_URL = '/static/'
 
 STATICFILES_DIRS = (
     STATIC_PATH,
 )
 
 MEDIA_ROOT = os.path.join(PROJECT_PATH, 'media')
-MEDIA_URL = '/cbra/media/'
+MEDIA_URL = '/media/'
 
 CORS_ORIGIN_ALLOW_ALL = True
 

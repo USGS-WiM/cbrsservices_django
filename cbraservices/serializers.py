@@ -81,7 +81,7 @@ class CaseSerializer(serializers.ModelSerializer):
                   'fws_hq_received_date', 'final_letter_date', 'close_date', 'final_letter_recipient', 'analyst',
                   'analyst_string', 'analyst_signoff_date', 'qc_reviewer', 'qc_reviewer_string',
                   'qc_reviewer_signoff_date', 'fws_reviewer', 'fws_reviewer_string', 'fws_reviewer_signoff_date',
-                  'priority', 'comments', 'tags', 'case_files', 'created_by', 'modified_by',)
+                  'priority', 'on_hold', 'invalid', 'comments', 'tags', 'case_files', 'created_by', 'modified_by',)
         read_only_fields = ('case_number', 'status', 'comments', 'tags', 'case_files',)
 
 
@@ -94,7 +94,7 @@ class WorkbenchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Case
         fields = ('id', 'status', 'request_date', 'property_string', 'cbrs_unit_string', 'distance',
-                  'analyst_string', 'qc_reviewer_string', 'priority',)
+                  'analyst_string', 'qc_reviewer_string', 'priority', 'on_hold', 'invalid',)
 
 
 class PropertySerializer(serializers.ModelSerializer):
