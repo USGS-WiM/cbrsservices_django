@@ -1,5 +1,7 @@
 import json
 from django.contrib.auth import authenticate, login, logout
+from django.db.models import Q
+from django.db.models.expressions import RawSQL
 from rest_framework import views, viewsets, permissions, authentication, status
 from rest_framework.response import Response
 from rest_framework.parsers import FormParser, MultiPartParser
@@ -39,7 +41,7 @@ class HistoryViewSet(viewsets.ModelViewSet):
     This class will automatically assign the User ID to the created_by and modified_by history fields when appropriate
     """
 
-    permission_classes = (IsStaff,)
+    permission_classes = (IsActive,)
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
@@ -83,6 +85,100 @@ class CaseViewSet(HistoryViewSet):
         requester = self.request.query_params.get('requester', None)
         if requester is not None:
             queryset = queryset.filter(requester__exact=requester)
+        # filter by status, exact list
+        status = self.request.query_params.get('status', None)
+        if status is not None:
+            status_list = status.split(',')
+            queryset = queryset.filter(status__in=status_list)
+        # filter by case number, exact list
+        case_number = self.request.query_params.get('case_number', None)
+        if case_number is not None:
+            print(str(case_number))
+            case_number_list = case_number.split(',')
+            queryset = queryset.filter(id__in=case_number_list)
+        # filter by request date (after only, before only, or between both, depending on which URL params appear)
+        request_date_after = self.request.query_params.get('request_date_after', None)
+        request_date_before = self.request.query_params.get('request_date_before', None)
+        if request_date_after is not None and request_date_before is not None:
+            # the filter below using __range is date-inclusive
+            # queryset = queryset.filter(request_date__range=(request_date_after, request_date_before))
+            # the filter below is date-exclusive
+            queryset = queryset.filter(request_date__gt=request_date_after, request_date__lt=request_date_before)
+        elif request_date_after is not None:
+            queryset = queryset.filter(request_date__gt=request_date_after)
+        elif request_date_before is not None:
+            queryset = queryset.filter(request_date__lt=request_date_before)
+        # filter by distance (to only, from only, or between both, depending on which URL params appear)
+        distance_from = self.request.query_params.get('distance_from', None)
+        distance_to = self.request.query_params.get('distance_to', None)
+        if distance_from is not None and distance_to is not None:
+            # the filter below using __range is value-inclusive
+            # queryset = queryset.filter(distance__range=(distance_from, distance_to))
+            # the filter below is value-exclusive
+            queryset = queryset.filter(distance__gt=distance_from, distance__lt=distance_to)
+        elif distance_from is not None:
+            queryset = queryset.filter(distance__gt=distance_from)
+        elif distance_to is not None:
+            queryset = queryset.filter(distance__lt=distance_to)
+        # filter by analyst IDs, exact list
+        analyst = self.request.query_params.get('analyst', None)
+        if analyst is not None:
+            analyst_list = analyst.split(',')
+            queryset = queryset.filter(analyst__in=analyst_list)
+        # filter by QC reviewer IDs, exact list
+        qc_reviewer = self.request.query_params.get('qc_reviewer', None)
+        if qc_reviewer is not None:
+            qc_reviewer_list = qc_reviewer.split(',')
+            queryset = queryset.filter(qc_reviewer__in=qc_reviewer_list)
+        # filter by CBRS unit IDs, exact list
+        cbrs_unit = self.request.query_params.get('cbrs_unit', None)
+        if cbrs_unit is not None:
+            cbrs_unit_list = cbrs_unit.split(',')
+            queryset = queryset.filter(cbrs_unit__in=cbrs_unit_list)
+        # filter by street, case-insensitive contain
+        street = self.request.query_params.get('street', None)
+        if street is not None:
+            queryset = queryset.filter(property__street__icontains=street)
+        # filter by city, case-insensitive contain
+        city = self.request.query_params.get('city', None)
+        if city is not None:
+            queryset = queryset.filter(property__city__icontains=city)
+        # filter by tag IDs, exact list
+        tags = self.request.query_params.get('tags', None)
+        if tags is not None:
+            tag_list = tags.split(',')
+            queryset = queryset.filter(tags__in=tag_list)
+        # filter by priority, exact
+        priority = self.request.query_params.get('priority', None)
+        if priority is not None:
+            queryset = queryset.filter(priority__exact=priority)
+        # # filter by on_hold, exact
+        # on_hold = self.request.query_params.get('on_hold', None)
+        # if on_hold is not None:
+        #     queryset = queryset.filter(on_hold__exact=on_hold)
+        # # filter by invalid, exact
+        # invalid = self.request.query_params.get('invalid', None)
+        # if invalid is not None:
+        #     queryset = queryset.filter(invalid__exact=invalid)
+        # filter by fiscal year, exact
+        fiscal_year = self.request.query_params.get('fiscal_year', None)
+        if fiscal_year is not None:
+            fiscal_year_start = str(int(fiscal_year) - 1) + "-10-01"
+            fiscal_year_end = fiscal_year + "-09-30"
+            queryset = queryset.filter(request_date__gte=fiscal_year_start, request_date__lte=fiscal_year_end)
+        # filter by freetext, case-insensitive contain
+        freetext = self.request.query_params.get('freetext', None)
+        if freetext is not None:
+            queryset = queryset.filter(
+                Q(analyst__username__icontains=freetext) |
+                Q(analyst__first_name__icontains=freetext) |
+                Q(analyst__last_name__icontains=freetext) |
+                #Q(case_number__icontains=freetext) |
+                #Q(RawSQL("SELECT id FROM cbra_case WHERE id::varchar ILIKE %s", freetext)) | #("'%'" + freetext + "'%'",))) |
+                Q(cbrs_unit__system_unit_name__icontains=freetext) |
+                Q(property__street__icontains=freetext) |
+                Q(property__unit__icontains=freetext) |
+                Q(property__city__icontains=freetext))
         return queryset
 
 
@@ -93,7 +189,7 @@ class CaseFileViewSet(HistoryViewSet):
     parser_classes = (MultiPartParser, FormParser,)
 
     def perform_create(self, serializer):
-        print(self.request.user)
+        # print(self.request.user)
 
         def get_user():
             if self.request.user.is_anonymous():
@@ -228,9 +324,18 @@ class CaseTagViewSet(HistoryViewSet):
 
 
 class TagViewSet(HistoryViewSet):
-    queryset = Tag.objects.all()
+    # queryset = Tag.objects.all()
     serializer_class = TagSerializer
     # permission_classes = (permissions.IsAuthenticated,)
+
+    # override the default queryset to allow filtering by URL arguments
+    def get_queryset(self):
+        queryset = Tag.objects.all()
+        # filter by tag name, exact
+        tag_name = self.request.query_params.get('name', None)
+        if tag_name is not None:
+            queryset = queryset.filter(name__exact=tag_name)
+        return queryset
 
 
 ######

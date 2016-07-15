@@ -28,14 +28,15 @@ def case_post_save(sender, **kwargs):
         case.case_hash = _get_hash(case.id)
         case.save()
 
+        # TODO: finalize the email settings (message text, addresses, etc)
         # construct and send the confirmation email
-        subject = "CBRA Determination Request Confirmation"
-        body = "Your request has been submitted. Here is your case ID: " + case.case_hash
-        from_address = "admin@cbra.fws.gov"
-        to_addresses_list = [case.requester.email, ]
-        bcc_addresses_list = ["astephenson@usgs.gov", ]
-        reply_to_list = None
-        headers = None  # {'Message-ID': 'foo'}
-        #send_mail(subject, message, from_address, to_addresses_list, fail_silently=False)
-        email = EmailMessage(subject, body, from_address, to_addresses_list, bcc_addresses_list, reply_to_list, headers)
-        email.send(fail_silently=False)
+        # subject = "CBRA Determination Request Confirmation"
+        # body = "Your request has been submitted. Here is your case ID: " + case.case_hash
+        # from_address = "admin@cbra.fws.gov"
+        # to_addresses_list = [case.requester.email, ]
+        # bcc_addresses_list = ["astephenson@usgs.gov", ]
+        # reply_to_list = None
+        # headers = None  # {'Message-ID': 'foo'}
+        # #send_mail(subject, message, from_address, to_addresses_list, fail_silently=False)
+        # email = EmailMessage(subject, body, from_address, to_addresses_list, bcc_addresses_list, reply_to_list, headers)
+        # email.send(fail_silently=False)
