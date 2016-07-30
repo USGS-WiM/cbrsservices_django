@@ -97,6 +97,17 @@ class WorkbenchSerializer(serializers.ModelSerializer):
                   'analyst_string', 'qc_reviewer_string', 'priority', 'on_hold', 'invalid',)
 
 
+class ReportSerializer(serializers.ModelSerializer):
+    cbrs_unit_string = serializers.StringRelatedField(source='cbrs_unit')
+    property_string = serializers.StringRelatedField(source='property')
+    determination_string = serializers.StringRelatedField(source='determination')
+
+    class Meta:
+        model = Case
+        fields = ('id', 'status', 'prohibition_date', 'cbrs_unit_string', 'request_date','final_letter_date',
+                  'property_string', 'determination_string',)
+
+
 class PropertySerializer(serializers.ModelSerializer):
 
     class Meta:
