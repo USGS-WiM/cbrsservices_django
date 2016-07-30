@@ -65,9 +65,11 @@ class CaseViewSet(HistoryViewSet):
 
     def get_serializer_class(self):
         view = self.request.query_params.get('view', None)
-        # if view is not specified or not equal to workbench, assume case
+        # if view is not specified or not equal to workbench or report, assume case
         if view is not None and view == 'workbench':
             return WorkbenchSerializer
+        elif view is not None and view == 'report':
+            return ReportSerializer
         else:
             return CaseSerializer
 

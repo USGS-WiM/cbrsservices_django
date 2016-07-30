@@ -170,7 +170,7 @@ class Property(AddressModel):
     policy_number = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
-        return self.street + ", " + self.city + ", " + self.state + ", " + self.zipcode
+        return self.street + ", " + self.unit + ", " + self.city + ", " + self.state + ", " + self.zipcode
 
     class Meta:
         db_table = "cbra_property"
