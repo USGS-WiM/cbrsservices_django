@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date
 from django.core import validators
 from django.db import models
 from django.contrib.auth.models import User
@@ -27,7 +27,7 @@ class HistoryModel(models.Model):
     An abstract base class model to track creation, modification, and data change history.
     """
 
-    created_date = models.DateField(default=datetime.now, null=True, blank=True, db_index=True)
+    created_date = models.DateField(default=date.today, null=True, blank=True, db_index=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, db_index=True,
                                    related_name='%(class)s_creator')
     modified_date = models.DateField(auto_now=True, null=True, blank=True)
@@ -94,7 +94,7 @@ class Case(HistoryModel):
     case_number = property(_get_id)
     case_hash = models.CharField(max_length=255, blank=True)
     status = property(_get_status)
-    request_date = models.DateField(default=datetime.now().date())
+    request_date = models.DateField(default=date.today)
     requester = models.ForeignKey('Requester', related_name='cases')
     property = models.ForeignKey('Property', related_name='cases')
     cbrs_unit = models.ForeignKey('SystemUnit', null=True, blank=True)
@@ -294,6 +294,7 @@ class SystemUnit(HistoryModel):
 
     system_unit_number = models.CharField(max_length=16, unique=True)
     system_unit_name = models.CharField(max_length=255, blank=True)
+    system_unit_type = models.ForeignKey('SystemUnitType')
     field_office = models.ForeignKey('FieldOffice', related_name='system_units', null=True, blank=True)
     system_maps = models.ManyToManyField('SystemMap', through='SystemUnitMap', related_name='system_units')
 
@@ -302,6 +303,21 @@ class SystemUnit(HistoryModel):
 
     class Meta:
         db_table = "cbra_systemunit"
+
+
+class SystemUnitType(HistoryModel):
+    """
+    Lookup table for Types for System Units.
+    """
+
+    unit_type = models.CharField(max_length=16, unique=True)
+
+    def __str__(self):
+        return self.unit_type
+
+    class Meta:
+        db_table = "cbra_systemunittype"
+        ordering = ['unit_type']
 
 
 class SystemUnitProhibitionDate(HistoryModel):
