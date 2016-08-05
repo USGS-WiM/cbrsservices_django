@@ -1,15 +1,18 @@
 import json
+from datetime import datetime as dt
 from django.contrib.auth import authenticate, login, logout
 from django.db.models import Q
 from django.db.models.expressions import RawSQL
 from rest_framework import views, viewsets, permissions, authentication, status
 from rest_framework.response import Response
+from rest_framework.settings import api_settings
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework_extensions.cache.mixins import CacheResponseMixin
 from rest_framework_extensions.cache.mixins import ListCacheResponseMixin
 from cbraservices.serializers import *
 from cbraservices.models import *
 from cbraservices.permissions import *
+from cbraservices.renderers import *
 
 
 ########################################################################################################################
@@ -63,6 +66,16 @@ class CaseViewSet(HistoryViewSet):
     # serializer_class = CaseSerializer
     # permission_classes = (permissions.IsAuthenticated,)
 
+    # override the default renderers to use a custom DOCX renderer when requested
+    def get_renderers(self):
+        frmt = self.request.query_params.get('format', None)
+        if frmt is not None and frmt == 'docx':
+            renderer_classes = (FinalLetterDOCXRenderer,) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)
+        else:
+            renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES)
+        return [renderer_class() for renderer_class in renderer_classes]
+
+    # override the default serializer_class if workbench or report format is specified
     def get_serializer_class(self):
         view = self.request.query_params.get('view', None)
         # if view is not specified or not equal to workbench or report, assume case
@@ -70,9 +83,25 @@ class CaseViewSet(HistoryViewSet):
             return WorkbenchSerializer
         elif view is not None and view == 'report':
             return ReportSerializer
+        elif self.request.accepted_renderer.format == 'docx':
+            return LetterSerializer
         else:
             return CaseSerializer
 
+    # override the default finalize_response to assign a filename to DOCX files
+    # see https://github.com/mjumbewu/django-rest-framework-csv/issues/15
+    def finalize_response(self, request, *args, **kwargs):
+        response = super(viewsets.ModelViewSet, self).finalize_response(request, *args, **kwargs)
+        if self.request.accepted_renderer.format == 'docx':
+            filename = 'final_letter_case_'
+            filename += self.get_queryset().first().case_hash + '_'
+            filename += dt.now().strftime("%Y") + '-' + dt.now().strftime("%m") + '-' + dt.now().strftime("%d")
+            filename += '.docx'
+            response['Content-Disposition'] = "attachment; filename=%s" % filename
+            response['Access-Control-Expose-Headers'] = 'Content-Disposition'
+        return response
+
+    # override the default queryset to allow filtering by URL arguments
     def get_queryset(self):
         queryset = Case.objects.all()
         # filter by case hash, exact
@@ -95,7 +124,7 @@ class CaseViewSet(HistoryViewSet):
         # filter by case number, exact list
         case_number = self.request.query_params.get('case_number', None)
         if case_number is not None:
-            print(str(case_number))
+            #print(str(case_number))
             case_number_list = case_number.split(',')
             queryset = queryset.filter(id__in=case_number_list)
         # filter by request date (after only, before only, or between both, depending on which URL params appear)
@@ -190,6 +219,7 @@ class CaseFileViewSet(HistoryViewSet):
     # permission_classes = (permissions.IsAuthenticated,)
     parser_classes = (MultiPartParser, FormParser,)
 
+    # override the default create to include user information
     def perform_create(self, serializer):
         # print(self.request.user)
 

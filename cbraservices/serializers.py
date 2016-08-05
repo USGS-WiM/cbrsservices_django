@@ -104,8 +104,19 @@ class ReportSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Case
-        fields = ('id', 'status', 'prohibition_date', 'cbrs_unit_string', 'request_date','final_letter_date',
+        fields = ('id', 'status', 'prohibition_date', 'cbrs_unit_string', 'request_date', 'final_letter_date',
                   'property_string', 'determination_string',)
+
+
+class LetterSerializer(serializers.ModelSerializer):
+    cbrs_unit_string = serializers.StringRelatedField(source='cbrs_unit')
+    system_unit_type = serializers.StringRelatedField(source='cbrs_unit.system_unit_type')
+    determination_string = serializers.StringRelatedField(source='determination')
+
+    class Meta:
+        model = Case
+        fields = ('id', 'case_hash', 'prohibition_date', 'cbrs_unit_string', 'system_unit_type',
+                  'determination', 'determination_string',)
 
 
 class PropertySerializer(serializers.ModelSerializer):
