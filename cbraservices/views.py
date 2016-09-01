@@ -116,11 +116,47 @@ class CaseViewSet(HistoryViewSet):
         requester = self.request.query_params.get('requester', None)
         if requester is not None:
             queryset = queryset.filter(requester__exact=requester)
-        # filter by status, exact list
+        # filter by status, exact
         status = self.request.query_params.get('status', None)
         if status is not None:
-            status_list = status.split(',')
-            queryset = queryset.filter(status__in=status_list)
+            if status == 'Closed with no Final Letter':
+                queryset = queryset.filter(analyst_signoff_date__exact=True,
+                                           qc_reviewer_signoff_date__exact=True,
+                                           fws_reviewer_signoff_date__exact=True,
+                                           close_date__exact=True,
+                                           final_letter_date__exact=False)
+            elif status == 'Final':
+                queryset = queryset.filter(analyst_signoff_date__exact=True,
+                                           qc_reviewer_signoff_date__exact=True,
+                                           fws_reviewer_signoff_date__exact=True,
+                                           close_date__exact=True,
+                                           final_letter_date__exact=True)
+            elif status == 'Awaiting Final Letter':
+                queryset = queryset.filter(analyst_signoff_date__exact=True,
+                                           qc_reviewer_signoff_date__exact=True,
+                                           fws_reviewer_signoff_date__exact=True,
+                                           close_date__exact=False,
+                                           final_letter_date__exact=False)
+            elif status == 'Awaiting FWS Review':
+                queryset = queryset.filter(analyst_signoff_date__exact=True,
+                                           qc_reviewer_signoff_date__exact=True,
+                                           fws_reviewer_signoff_date__exact=False,
+                                           close_date__exact=False,
+                                           final_letter_date__exact=False)
+            elif status == 'Awaiting QC':
+                queryset = queryset.filter(analyst_signoff_date__exact=True,
+                                           qc_reviewer_signoff_date__exact=False,
+                                           fws_reviewer_signoff_date__exact=False,
+                                           close_date__exact=False,
+                                           final_letter_date__exact=False)
+            elif status == 'Received':
+                queryset = queryset.filter(analyst_signoff_date__exact=False,
+                                           qc_reviewer_signoff_date__exact=False,
+                                           fws_reviewer_signoff_date__exact=False,
+                                           close_date__exact=False,
+                                           final_letter_date__exact=False)
+            else:
+                pass
         # filter by case number, exact list
         case_number = self.request.query_params.get('case_number', None)
         if case_number is not None:
