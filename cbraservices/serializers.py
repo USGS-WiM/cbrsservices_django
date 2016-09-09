@@ -31,7 +31,7 @@ class CaseFileSerializer(serializers.ModelSerializer):
                 filemagic = magic.Magic(magic_file=magic_file, mime=True)
             else:
                 filemagic = magic.Magic(mime=True)
-            filetype = filemagic.from_buffer(file.read()).decode('utf-8')
+            filetype = filemagic.from_buffer(file.read())
             if filetype in settings.CONTENT_TYPES:
                 # check the file size
                 if file.size > settings.MAX_UPLOAD_SIZE:
