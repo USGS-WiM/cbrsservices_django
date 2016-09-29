@@ -34,7 +34,7 @@ class CaseFileSerializer(serializers.ModelSerializer):
             filetype = filemagic.from_buffer(file.read())
             if filetype in settings.CONTENT_TYPES:
                 # check the file size
-                if file.size > settings.MAX_UPLOAD_SIZE:
+                if int(file.size) > settings.MAX_UPLOAD_SIZE:
                     raise serializers.ValidationError(_('Please keep filesize under %s. Current filesize %s') % (
                         filesizeformat(settings.MAX_UPLOAD_SIZE), filesizeformat(file.size)))
                 else:
