@@ -18,7 +18,7 @@ from cbraservices.renderers import *
 ########################################################################################################################
 #
 #  copyright: 2016 WiM - USGS
-#  authors: Aaron Stephenson USGS WiM (Wisconsin Internet Mapping)
+#  authors: Aaron Stephenson USGS WiM (Web Informatics and Mapping)
 #
 #  In Django, a view is what takes a Web request and returns a Web response. The response can be many things, but most
 #  of the time it will be a Web page, a redirect, or a document. In this case, the response will almost always be data
@@ -120,49 +120,54 @@ class CaseViewSet(HistoryViewSet):
         status = self.request.query_params.get('status', None)
         if status is not None:
             if status == 'Closed with no Final Letter':
-                queryset = queryset.filter(analyst_signoff_date__exact=True,
-                                           qc_reviewer_signoff_date__exact=True,
-                                           fws_reviewer_signoff_date__exact=True,
-                                           close_date__exact=True,
-                                           final_letter_date__exact=False)
+                queryset = queryset.filter(analyst_signoff_date__isnull=False,
+                                           qc_reviewer_signoff_date__isnull=False,
+                                           fws_reviewer_signoff_date__isnull=False,
+                                           close_date__isnull=False,
+                                           final_letter_date__isnull=True)
             elif status == 'Final':
-                queryset = queryset.filter(analyst_signoff_date__exact=True,
-                                           qc_reviewer_signoff_date__exact=True,
-                                           fws_reviewer_signoff_date__exact=True,
-                                           close_date__exact=True,
-                                           final_letter_date__exact=True)
+                queryset = queryset.filter(analyst_signoff_date__isnull=False,
+                                           qc_reviewer_signoff_date__isnull=False,
+                                           fws_reviewer_signoff_date__isnull=False,
+                                           close_date__isnull=False,
+                                           final_letter_date__isnull=False)
             elif status == 'Awaiting Final Letter':
-                queryset = queryset.filter(analyst_signoff_date__exact=True,
-                                           qc_reviewer_signoff_date__exact=True,
-                                           fws_reviewer_signoff_date__exact=True,
-                                           close_date__exact=False,
-                                           final_letter_date__exact=False)
+                queryset = queryset.filter(analyst_signoff_date__isnull=False,
+                                           qc_reviewer_signoff_date__isnull=False,
+                                           fws_reviewer_signoff_date__isnull=False,
+                                           close_date__isnull=True,
+                                           final_letter_date__isnull=True)
             elif status == 'Awaiting FWS Review':
-                queryset = queryset.filter(analyst_signoff_date__exact=True,
-                                           qc_reviewer_signoff_date__exact=True,
-                                           fws_reviewer_signoff_date__exact=False,
-                                           close_date__exact=False,
-                                           final_letter_date__exact=False)
+                queryset = queryset.filter(analyst_signoff_date__isnull=False,
+                                           qc_reviewer_signoff_date__isnull=False,
+                                           fws_reviewer_signoff_date__isnull=True,
+                                           close_date__isnull=True,
+                                           final_letter_date__isnull=True)
             elif status == 'Awaiting QC':
-                queryset = queryset.filter(analyst_signoff_date__exact=True,
-                                           qc_reviewer_signoff_date__exact=False,
-                                           fws_reviewer_signoff_date__exact=False,
-                                           close_date__exact=False,
-                                           final_letter_date__exact=False)
+                queryset = queryset.filter(analyst_signoff_date__isnull=False,
+                                           qc_reviewer_signoff_date__isnull=True,
+                                           fws_reviewer_signoff_date__isnull=True,
+                                           close_date__isnull=True,
+                                           final_letter_date__isnull=True)
             elif status == 'Received':
-                queryset = queryset.filter(analyst_signoff_date__exact=False,
-                                           qc_reviewer_signoff_date__exact=False,
-                                           fws_reviewer_signoff_date__exact=False,
-                                           close_date__exact=False,
-                                           final_letter_date__exact=False)
+                queryset = queryset.filter(analyst_signoff_date__isnull=True,
+                                           qc_reviewer_signoff_date__isnull=True,
+                                           fws_reviewer_signoff_date__isnull=True,
+                                           close_date__isnull=True,
+                                           final_letter_date__isnull=True)
             else:
                 pass
         # filter by case number, exact list
         case_number = self.request.query_params.get('case_number', None)
         if case_number is not None:
-            #print(str(case_number))
             case_number_list = case_number.split(',')
             queryset = queryset.filter(id__in=case_number_list)
+        # filter by case reference, exact list
+        case_reference = self.request.query_params.get('case_reference', None)
+        if case_reference is not None:
+            # print(str(case_reference))
+            case_reference_list = case_reference.split(',')
+            queryset = queryset.filter(case_hash__in=case_reference_list)
         # filter by request date (after only, before only, or between both, depending on which URL params appear)
         request_date_after = self.request.query_params.get('request_date_after', None)
         request_date_before = self.request.query_params.get('request_date_before', None)
@@ -311,6 +316,10 @@ class PropertyViewSet(HistoryViewSet):
         zipcode = self.request.query_params.get('zipcode', None)
         if zipcode is not None:
             queryset = queryset.filter(zipcode__exact=zipcode)
+        # filter by legal_description, exact
+        legal_description = self.request.query_params.get('legal_description', None)
+        if legal_description is not None:
+            queryset = queryset.filter(legal_description__exact=legal_description)
         return queryset
 
 

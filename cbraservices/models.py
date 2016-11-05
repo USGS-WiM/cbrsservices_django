@@ -81,9 +81,9 @@ class Case(HistoryModel):
         elif self.fws_reviewer_signoff_date:
             return 'Awaiting Final Letter'
         elif self.qc_reviewer_signoff_date:
-            return 'Awaiting FWS Review'
+            return 'Awaiting Level 2 QC'
         elif self.analyst_signoff_date:
-            return 'Awaiting QC'
+            return 'Awaiting Level 1 QC'
         else:
             return 'Received'
 
@@ -149,6 +149,8 @@ class CaseFile(HistoryModel):
     name = property(_get_filename)
     file = models.FileField(upload_to=casefile_location)
     case = models.ForeignKey('Case', related_name='case_files')
+    from_requester = models.BooleanField(default=False)
+    final_letter = models.BooleanField(default=False)
     uploader = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, related_name="case_files")
     uploaded_date = models.DateField(auto_now_add=True, null=True, blank=True)
 
@@ -166,6 +168,7 @@ class Property(AddressModel):
     """
 
     # other fields for lot number, legal descriptions, lat/lon, etc, need to be discussed
+    legal_description = models.CharField(max_length=255, blank=True)
     subdivision = models.CharField(max_length=255, blank=True)
     policy_number = models.CharField(max_length=255, blank=True)
 
