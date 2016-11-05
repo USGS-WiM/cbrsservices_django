@@ -45,7 +45,7 @@ class CaseFileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CaseFile
-        fields = ('id', 'name', 'file', 'case', 'uploaded_date',)
+        fields = ('id', 'name', 'file', 'case', 'from_requester', 'final_letter', 'uploaded_date',)
         read_only_fields = ('name',)
 
 
@@ -54,16 +54,40 @@ class CaseSerializer(serializers.ModelSerializer):
     def validate(self, data):
         """
         Ensure that no user is used by more than one of the following fields: Analyst, QC_Reviewer, FWS_Reviewer
+        Also ensure that no date field is out of chronological order
+        (dates must be in this order: request <= field office <= hq <= analyst <= qc <= fws <= final letter <= close)
         """
         an = self.initial_data.get('analyst', None)
         qc = self.initial_data.get('qc_reviewer', None)
         fws = self.initial_data.get('fws_reviewer', None)
+        rdate = self.initial_data.get('request_date', None)
+        fodate = self.initial_data.get('fws_fo_received_date', None)
+        hqdate = self.initial_data.get('fws_hq_received_date', None)
+        andate = self.initial_data.get('analyst_signoff_date', None)
+        qcdate = self.initial_data.get('qc_reviewer_signoff_date', None)
+        fwsdate = self.initial_data.get('fws_reviewer_signoff_date', None)
+        fldate = self.initial_data.get('final_letter_date', None)
+        cdate = self.initial_data.get('close_date', None)
         if an is not None and qc is not None and an == qc:
             raise serializers.ValidationError("analyst cannot be the same as qc_reviewer")
         if an is not None and fws is not None and an == fws:
             raise serializers.ValidationError("analyst cannot be the same as fws_reviewer")
         if qc is not None and fws is not None and qc == fws:
             raise serializers.ValidationError("qc_reviewer cannot be the same as fws_reviewer")
+        if rdate is not None and fodate is not None and rdate > fodate:
+            raise serializers.ValidationError("request_date must be earlier than all other dates.")
+        if fodate is not None and hqdate is not None and fodate > hqdate:
+            raise serializers.ValidationError("fws_fo_received_date cannot be later than fws_hq_received_date.")
+        if hqdate is not None and andate is not None and hqdate > andate:
+            raise serializers.ValidationError("fws_hq_received_date cannot be later than analyst_signoff_date.")
+        if andate is not None and qcdate is not None and andate > qcdate:
+            raise serializers.ValidationError("analyst_signoff_date cannot be later than qc_reviewer_signoff_date.")
+        if qcdate is not None and fwsdate is not None and qcdate > fwsdate:
+            raise serializers.ValidationError("qc_reviewer_signoff_date cannot be later than fws_reviewer_signoff_date.")
+        if fwsdate is not None and fldate is not None and fwsdate > fldate:
+            raise serializers.ValidationError("fws_reviewer_signoff_date cannot be later than final_letter_date.")
+        if fldate is not None and cdate is not None and fldate > cdate:
+            raise serializers.ValidationError("final_letter_date cannot be later than close_date.")
         return data
 
     analyst_string = serializers.StringRelatedField(source='analyst')
@@ -93,7 +117,7 @@ class WorkbenchSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Case
-        fields = ('id', 'status', 'request_date', 'property_string', 'cbrs_unit_string', 'distance',
+        fields = ('id', 'case_hash', 'status', 'request_date', 'property_string', 'cbrs_unit_string', 'distance',
                   'analyst_string', 'qc_reviewer_string', 'priority', 'on_hold', 'invalid',)
 
 
@@ -112,18 +136,39 @@ class LetterSerializer(serializers.ModelSerializer):
     cbrs_unit_string = serializers.StringRelatedField(source='cbrs_unit')
     system_unit_type = serializers.StringRelatedField(source='cbrs_unit.system_unit_type')
     determination_string = serializers.StringRelatedField(source='determination')
+    policy_number = serializers.CharField(source='property.policy_number')
+    property_street = serializers.CharField(source='property.street')
+    property_unit = serializers.CharField(source='property.unit')
+    property_city = serializers.CharField(source='property.city')
+    property_state = serializers.CharField(source='property.state')
+    property_zipcode = serializers.CharField(source='property.zipcode')
+    legal_description = serializers.CharField(source='property.legal_description')
+    subdivision = serializers.CharField(source='property.subdivision')
+    salutation = serializers.CharField(source='requester.salutation')
+    first_name = serializers.CharField(source='requester.first_name')
+    last_name = serializers.CharField(source='requester.last_name')
+    requester_street = serializers.CharField(source='requester.street')
+    requester_unit = serializers.CharField(source='requester.unit')
+    requester_city = serializers.CharField(source='requester.city')
+    requester_state = serializers.CharField(source='requester.state')
+    requester_zipcode = serializers.CharField(source='requester.zipcode')
 
     class Meta:
         model = Case
-        fields = ('id', 'case_hash', 'prohibition_date', 'cbrs_unit_string', 'system_unit_type',
-                  'determination', 'determination_string',)
+        fields = ('id', 'case_hash', 'request_date', 'determination', 'determination_string', 'cbrs_unit',
+                  'cbrs_unit_string', 'system_unit_type', 'prohibition_date', 'map_number', 'cbrs_map_date',
+                  'final_letter_recipient', 'policy_number', 'property_street', 'property_unit', 'property_city',
+                  'property_state', 'property_zipcode', 'legal_description', 'subdivision', 'salutation', 'first_name',
+                  'last_name', 'requester_street', 'requester_unit', 'requester_city', 'requester_state',
+                  'requester_zipcode', )
 
 
 class PropertySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Property
-        fields = ('id', 'street', 'unit', 'city', 'state', 'zipcode', 'subdivision', 'policy_number', 'cases')
+        fields = ('id', 'street', 'unit', 'city', 'state', 'zipcode', 'subdivision', 'legal_description',
+                  'policy_number', 'cases',)
         read_only_fields = ('cases',)
 
 
@@ -132,7 +177,7 @@ class RequesterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Requester
         fields = ('id', 'salutation', 'first_name', 'last_name', 'organization', 'email',
-                  'street', 'unit', 'city', 'state', 'zipcode', 'cases')
+                  'street', 'unit', 'city', 'state', 'zipcode', 'cases',)
         read_only_fields = ('cases',)
 
 
@@ -148,7 +193,7 @@ class CaseTagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CaseTag
-        fields = ('id', 'case', 'tag', 'tagname')
+        fields = ('id', 'case', 'tag', 'tagname',)
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -237,4 +282,4 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'first_name', 'last_name', 'email',
-                  'groups', 'user_permissions', 'is_superuser', 'is_staff', 'is_active')
+                  'groups', 'user_permissions', 'is_superuser', 'is_staff', 'is_active',)
