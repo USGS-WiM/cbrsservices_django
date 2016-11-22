@@ -93,6 +93,7 @@ class Case(HistoryModel):
 
     case_number = property(_get_id)
     case_hash = models.CharField(max_length=255, blank=True)
+    legacy_case_number = models.CharField(max_length=255, blank=True)
     status = property(_get_status)
     request_date = models.DateField(default=date.today)
     requester = models.ForeignKey('Requester', related_name='cases')
@@ -177,7 +178,7 @@ class Property(AddressModel):
 
     class Meta:
         db_table = "cbra_property"
-        unique_together = ("street", "unit", "city", "state", "zipcode")
+        unique_together = ("street", "unit", "city", "state", "zipcode", "legal_description")
         verbose_name_plural = "properties"
 
 
