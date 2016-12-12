@@ -137,13 +137,13 @@ class CaseViewSet(HistoryViewSet):
                                            fws_reviewer_signoff_date__isnull=False,
                                            close_date__isnull=True,
                                            final_letter_date__isnull=True)
-            elif status == 'Awaiting FWS Review':
+            elif status == 'Awaiting Level 2 QC':
                 queryset = queryset.filter(analyst_signoff_date__isnull=False,
                                            qc_reviewer_signoff_date__isnull=False,
                                            fws_reviewer_signoff_date__isnull=True,
                                            close_date__isnull=True,
                                            final_letter_date__isnull=True)
-            elif status == 'Awaiting QC':
+            elif status == 'Awaiting Level 1 QC':
                 queryset = queryset.filter(analyst_signoff_date__isnull=False,
                                            qc_reviewer_signoff_date__isnull=True,
                                            fws_reviewer_signoff_date__isnull=True,
@@ -155,6 +155,8 @@ class CaseViewSet(HistoryViewSet):
                                            fws_reviewer_signoff_date__isnull=True,
                                            close_date__isnull=True,
                                            final_letter_date__isnull=True)
+            elif status == 'Open':
+                queryset = queryset.filter(close_date__isnull=False)
             else:
                 pass
         # filter by case number, exact list
