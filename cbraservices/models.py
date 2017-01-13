@@ -95,7 +95,7 @@ class Case(HistoryModel):
     case_hash = models.CharField(max_length=255, blank=True)
     legacy_case_number = models.CharField(max_length=255, blank=True)
     status = property(_get_status)
-    request_date = models.DateField(default=date.today)
+    request_date = models.DateField(default=date.today, null=True, blank=True)
     requester = models.ForeignKey('Requester', related_name='cases')
     property = models.ForeignKey('Property', related_name='cases')
     cbrs_unit = models.ForeignKey('SystemUnit', null=True, blank=True)

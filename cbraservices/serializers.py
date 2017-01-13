@@ -99,9 +99,9 @@ class CaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Case
-        fields = ('id', 'case_number', 'case_hash', 'status', 'request_date', 'requester', 'property', 'cbrs_unit',
-                  'cbrs_unit_string', 'map_number', 'map_number_string', 'cbrs_map_date', 'determination',
-                  'determination_string', 'prohibition_date', 'distance', 'fws_fo_received_date',
+        fields = ('id', 'case_number', 'case_hash', 'legacy_case_number', 'status', 'request_date', 'requester',
+                  'property', 'cbrs_unit', 'cbrs_unit_string', 'map_number', 'map_number_string', 'cbrs_map_date',
+                  'determination', 'determination_string', 'prohibition_date', 'distance', 'fws_fo_received_date',
                   'fws_hq_received_date', 'final_letter_date', 'close_date', 'final_letter_recipient', 'analyst',
                   'analyst_string', 'analyst_signoff_date', 'qc_reviewer', 'qc_reviewer_string',
                   'qc_reviewer_signoff_date', 'fws_reviewer', 'fws_reviewer_string', 'fws_reviewer_signoff_date',
@@ -117,8 +117,9 @@ class WorkbenchSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Case
-        fields = ('id', 'case_hash', 'status', 'request_date', 'property_string', 'cbrs_unit_string', 'distance',
-                  'analyst_string', 'qc_reviewer_string', 'priority', 'on_hold', 'invalid',)
+        fields = ('id', 'case_hash', 'legacy_case_number', 'status', 'request_date', 'property_string',
+                  'cbrs_unit_string', 'distance', 'analyst_string', 'qc_reviewer_string', 'priority', 'on_hold',
+                  'invalid',)
 
 
 class ReportSerializer(serializers.ModelSerializer):
