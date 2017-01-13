@@ -1,4 +1,6 @@
 import json
+import operator
+from functools import reduce
 from datetime import datetime as dt
 from django.contrib.auth import authenticate, login, logout
 from django.db.models import Q
@@ -156,14 +158,18 @@ class CaseViewSet(HistoryViewSet):
                                            close_date__isnull=True,
                                            final_letter_date__isnull=True)
             elif status == 'Open':
-                queryset = queryset.filter(close_date__isnull=False)
+                queryset = queryset.filter(close_date__isnull=True,
+                                           final_letter_date__isnull=True)
+                print(str(len(queryset)))
             else:
                 pass
         # filter by case number, exact list
         case_number = self.request.query_params.get('case_number', None)
         if case_number is not None:
             case_number_list = case_number.split(',')
-            queryset = queryset.filter(id__in=case_number_list)
+            queryset = queryset.filter(
+                Q(id__in=case_number_list) |
+                reduce(operator.and_, (Q(legacy_case_number__icontains=x) for x in case_number_list)))
         # filter by case reference, exact list
         case_reference = self.request.query_params.get('case_reference', None)
         if case_reference is not None:
@@ -247,6 +253,7 @@ class CaseViewSet(HistoryViewSet):
                 Q(analyst__username__icontains=freetext) |
                 Q(analyst__first_name__icontains=freetext) |
                 Q(analyst__last_name__icontains=freetext) |
+                Q(legacy_case_number__icontains=freetext) |
                 #Q(case_number__icontains=freetext) |
                 #Q(RawSQL("SELECT id FROM cbra_case WHERE id::varchar ILIKE %s", freetext)) | #("'%'" + freetext + "'%'",))) |
                 Q(cbrs_unit__system_unit_name__icontains=freetext) |
