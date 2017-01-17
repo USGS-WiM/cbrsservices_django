@@ -13,6 +13,7 @@ from cbraservices.serializers import *
 from cbraservices.models import *
 from cbraservices.permissions import *
 from cbraservices.renderers import *
+from cbraservices.paginations import *
 
 
 ########################################################################################################################
@@ -512,6 +513,7 @@ class FieldOfficeViewSet(HistoryViewSet):
 
 class ReportCaseView(generics.ListAPIView):
     permission_classes = (IsActive,)
+    pagination_class = StandardResultsSetPagination
 
     # override the default serializer_class if format is specified
     def get_serializer_class(self):
