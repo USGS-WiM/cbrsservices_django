@@ -535,6 +535,7 @@ class ReportCaseView(generics.ListAPIView):
         if cbrs_unit is not None:
             cbrs_unit_list = cbrs_unit.split(',')
             queryset = queryset.filter(cbrs_unit__in=cbrs_unit_list)
+        return queryset
 
 
 ######
