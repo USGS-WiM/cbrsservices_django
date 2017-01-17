@@ -1,11 +1,9 @@
 import json
-import operator
-from functools import reduce
 from datetime import datetime as dt
 from django.contrib.auth import authenticate, login, logout
 from django.db.models import Q
 from django.db.models.expressions import RawSQL
-from rest_framework import views, viewsets, permissions, authentication, status
+from rest_framework import views, viewsets, generics, permissions, authentication, status
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from rest_framework.parsers import FormParser, MultiPartParser
@@ -87,6 +85,8 @@ class CaseViewSet(HistoryViewSet):
             return ReportSerializer
         elif self.request.accepted_renderer.format == 'docx':
             return LetterSerializer
+        elif view is not None and view == 'caseid':
+            return CaseIDSerializer
         else:
             return CaseSerializer
 
@@ -96,7 +96,7 @@ class CaseViewSet(HistoryViewSet):
         response = super(viewsets.ModelViewSet, self).finalize_response(request, *args, **kwargs)
         if self.request.accepted_renderer.format == 'docx':
             filename = 'final_letter_case_'
-            filename += self.get_queryset().first().case_hash + '_'
+            filename += self.get_queryset().first().case_reference + '_'
             filename += dt.now().strftime("%Y") + '-' + dt.now().strftime("%m") + '-' + dt.now().strftime("%d")
             filename += '.docx'
             response['Content-Disposition'] = "attachment; filename=%s" % filename
@@ -106,10 +106,10 @@ class CaseViewSet(HistoryViewSet):
     # override the default queryset to allow filtering by URL arguments
     def get_queryset(self):
         queryset = Case.objects.all()
-        # filter by case hash, exact
-        case_hash = self.request.query_params.get('case_hash', None)
-        if case_hash is not None:
-            queryset = queryset.filter(case_hash__exact=case_hash)
+        # filter by case reference, exact
+        case_reference = self.request.query_params.get('case_reference', None)
+        if case_reference is not None:
+            queryset = queryset.filter(case_reference__exact=case_reference)
         # filter by property ID, exact
         property = self.request.query_params.get('property', None)
         if property is not None:
@@ -160,22 +160,18 @@ class CaseViewSet(HistoryViewSet):
             elif status == 'Open':
                 queryset = queryset.filter(close_date__isnull=True,
                                            final_letter_date__isnull=True)
-                print(str(len(queryset)))
             else:
                 pass
         # filter by case number, exact list
         case_number = self.request.query_params.get('case_number', None)
         if case_number is not None:
             case_number_list = case_number.split(',')
-            queryset = queryset.filter(
-                Q(id__in=case_number_list) |
-                reduce(operator.and_, (Q(legacy_case_number__icontains=x) for x in case_number_list)))
+            queryset = queryset.filter(id__in=case_number_list)
         # filter by case reference, exact list
         case_reference = self.request.query_params.get('case_reference', None)
         if case_reference is not None:
-            # print(str(case_reference))
             case_reference_list = case_reference.split(',')
-            queryset = queryset.filter(case_hash__in=case_reference_list)
+            queryset = queryset.filter(case_reference__in=case_reference_list)
         # filter by request date (after only, before only, or between both, depending on which URL params appear)
         request_date_after = self.request.query_params.get('request_date_after', None)
         request_date_before = self.request.query_params.get('request_date_before', None)
@@ -253,7 +249,7 @@ class CaseViewSet(HistoryViewSet):
                 Q(analyst__username__icontains=freetext) |
                 Q(analyst__first_name__icontains=freetext) |
                 Q(analyst__last_name__icontains=freetext) |
-                Q(legacy_case_number__icontains=freetext) |
+                Q(case_reference__icontains=freetext) |
                 #Q(case_number__icontains=freetext) |
                 #Q(RawSQL("SELECT id FROM cbra_case WHERE id::varchar ILIKE %s", freetext)) | #("'%'" + freetext + "'%'",))) |
                 Q(cbrs_unit__system_unit_name__icontains=freetext) |
@@ -505,6 +501,40 @@ class FieldOfficeViewSet(HistoryViewSet):
     queryset = FieldOffice.objects.all()
     serializer_class = FieldOfficeSerializer
     # permission_classes = (permissions.IsAuthenticated,)
+
+
+######
+#
+# Reports
+#
+######
+
+
+class ReportCaseView(generics.ListAPIView):
+    permission_classes = (IsActive,)
+
+    # override the default serializer_class if format is specified
+    def get_serializer_class(self):
+        report = self.request.query_params.get('report', None)
+        # if report is not specified or not equal to an approved report, assume generic report
+        if report is not None and report == 'casesbyunit':
+            return ReportCasesByUnitSerializer
+        elif report is not None and report == 'daystoresolution':
+            return ReportDaysToResolutionSerializer
+        elif report is not None and report == 'daystoeachstatus':
+            return ReportDaysToEachStatusSerializer
+        elif report is not None and report == 'numberofcasesbystatus':
+            return ReportNumberOfCasesByStatusSerializer
+        else:
+            return ReportSerializer
+
+    def get_queryset(self):
+        queryset = ReportCase.objects.all()
+        # filter by CBRS unit IDs, exact list
+        cbrs_unit = self.request.query_params.get('cbrs_unit', None)
+        if cbrs_unit is not None:
+            cbrs_unit_list = cbrs_unit.split(',')
+            queryset = queryset.filter(cbrs_unit__in=cbrs_unit_list)
 
 
 ######

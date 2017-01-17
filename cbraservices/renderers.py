@@ -25,7 +25,7 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
 
         # case fields
         id = str(data[0]['id'])
-        case_hash = data[0]['case_hash'] or ""
+        case_reference = data[0]['case_reference'] or ""
         request_date = datetime.strptime(data[0]['request_date'], '%Y-%m-%d').strftime('%B %d, %Y') or ""
         determination = data[0]['determination'] or ""
         determination_string = data[0]['determination_string'] or ""
@@ -71,7 +71,7 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         salutation = "Dear " + requester_salutation + " " + requester_last_name + ":"
 
         intro = "The U.S. Fish and Wildlife Service (Service) has reviewed the request dated " + request_date + ","
-        intro += " Case " + case_hash + ", for a determination as to whether the following property"
+        intro += " Case " + case_reference + ", for a determination as to whether the following property"
         intro += " is within a System Unit or an Otherwise Protected Area (OPA) of the John H. Chafee"
         intro += " Coastal Barrier Resources System (CBRS)."
         if property_policy_number != "":

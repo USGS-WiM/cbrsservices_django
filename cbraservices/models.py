@@ -92,8 +92,8 @@ class Case(HistoryModel):
     # this custom receiver will create the case hash (public ID) and send a confirmation email
 
     case_number = property(_get_id)
-    case_hash = models.CharField(max_length=255, blank=True)
-    legacy_case_number = models.CharField(max_length=255, blank=True)
+    case_reference = models.CharField(max_length=255, blank=True)
+    duplicate = models.ForeignKey('self', null=True, blank=True)
     status = property(_get_status)
     request_date = models.DateField(default=date.today, null=True, blank=True)
     requester = models.ForeignKey('Requester', related_name='cases')
@@ -392,3 +392,91 @@ class FieldOffice(HistoryModel):
 
     class Meta:
         db_table = "cbra_fieldoffice"
+
+
+class ReportCase(models.Model):
+
+    def _get_id(self):
+        """Returns the id of the record"""
+        return '%s' % self.id
+
+    def _get_analyst_signoff_days(self):
+        """Returns the number of days needed to get analyst signoff (Awaiting QC Level 1 Date - Request Date)"""
+        if self.request_date and self.analyst_signoff_date:
+            analyst_time = self.analyst_signoff_date - self.request_date
+            return '%s' % analyst_time.days
+        else:
+            return None
+
+    def _get_qc_reviewer_days(self):
+        """Returns the number of days needed to get qc reviewer signoff (Awaiting QC Level 2 Date - Request Date)"""
+        if self.request_date and self.qc_reviewer_signoff_date:
+            qc_reviewer_time = self.qc_reviewer_signoff_date - self.request_date
+            return '%s' % qc_reviewer_time.days
+        else:
+            return None
+
+    def _get_fws_reviewer_days(self):
+        """Returns the number of days needed to get fws reviewer signoff (Awaiting Final Letter Date - Request Date)"""
+        if self.request_date and self.fws_reviewer_signoff_date:
+            fws_reviewer_time = self.fws_reviewer_signoff_date - self.request_date
+            return '%s' % fws_reviewer_time.days
+        else:
+            return None
+
+    def _get_final_letter_days(self):
+        """Returns the number of days needed to get the final letter (Final Letter Date - Request Date)"""
+        if self.request_date and self.final_letter_date:
+            final_letter_time = self.final_letter_date - self.request_date
+            return '%s' % final_letter_time.days
+        else:
+            return None
+
+    def _get_close_days(self):
+        """Returns the number of days needed to close the case (Close Date - Request Date)"""
+        if self.request_date and self.close_date:
+            close_time = self.close_date - self.request_date
+            return '%s' % close_time.days
+        else:
+            return None
+
+    def _get_status(self):
+        """Returns the status of the record"""
+        if self.close_date and not self.final_letter_date:
+            return 'Closed with no Final Letter'
+        elif self.close_date:
+            return 'Final'
+        elif self.fws_reviewer_signoff_date:
+            return 'Awaiting Final Letter'
+        elif self.qc_reviewer_signoff_date:
+            return 'Awaiting Level 2 QC'
+        elif self.analyst_signoff_date:
+            return 'Awaiting Level 1 QC'
+        else:
+            return 'Received'
+
+    case_id = models.IntegerField(primary_key=True)
+    case_number = property(_get_id)
+    case_reference = models.CharField(max_length=255)
+    status = property(_get_status)
+    analyst_signoff_days = property(_get_analyst_signoff_days)
+    qc_reviewer_days = property(_get_qc_reviewer_days)
+    fws_reviewer_days = property(_get_fws_reviewer_days)
+    final_letter_days = property(_get_final_letter_days)
+    close_days = property(_get_close_days)
+    request_date = models.DateField(default=date.today)
+    property = models.ForeignKey('Property', related_name='reportcases')
+    cbrs_unit = models.ForeignKey('SystemUnit', null=True, blank=True)
+    determination = models.ForeignKey('Determination', null=True, blank=True)
+    analyst_signoff_date = models.DateField()
+    qc_reviewer_signoff_date = models.DateField()
+    fws_reviewer_signoff_date = models.DateField()
+    final_letter_date = models.DateField()
+    close_date = models.DateField()
+
+    def __str__(self):
+        return str(self.case_id)
+
+    class Meta:
+        db_table = "cbra_case"
+        managed = False
