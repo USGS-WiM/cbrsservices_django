@@ -28,14 +28,14 @@ def case_post_save(sender, **kwargs):
 
     if kwargs['created']:
         # create and assign the case ID hash
-        case.case_hash = _get_hash(case.id)
+        case.case_reference = _get_hash(case.id)
         case.save()
 
         # TODO: finalize the email settings (message text, addresses, etc)
         # construct and send the confirmation email
         subject = "Coastal Barrier Resources Act Determination Request Received"
         body = "Dear Requester,\r\n\r\nThe U.S. Fish and Wildlife Services has received your request."
-        body += "\r\nThe Reference Number is: " + case.case_hash
+        body += "\r\nThe Reference Number is: " + case.case_reference
         from_address = cbra_email_address
         to_addresses_list = [case.requester.email, ]
         bcc_addresses_list = other_cbra_email_addresses
@@ -50,7 +50,7 @@ def case_post_save(sender, **kwargs):
 
         # TODO: finalize the email settings (message text, addresses, etc)
         # construct and send the final email with the final letter as attachment
-        subject = "Coastal Barrier Resources Act Determination Case " + case.case_hash
+        subject = "Coastal Barrier Resources Act Determination Case " + case.case_reference
         body = "Dear Requester,\r\n\r\nAttached is the Coastal Barrier Resources Act determination that you requested"
         body += " from the U.S. Fish and Wildlife Service. If you have any questions about this determination,"
         body += " please contact Teresa Fish, Program Specialist, at (703) 358-2171 or e-mail us at cbra@fws.gov."

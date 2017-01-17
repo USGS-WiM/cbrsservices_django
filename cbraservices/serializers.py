@@ -99,8 +99,8 @@ class CaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Case
-        fields = ('id', 'case_number', 'case_hash', 'legacy_case_number', 'status', 'request_date', 'requester',
-                  'property', 'cbrs_unit', 'cbrs_unit_string', 'map_number', 'map_number_string', 'cbrs_map_date',
+        fields = ('id', 'case_number', 'case_reference', 'duplicate', 'status', 'request_date', 'requester', 'property',
+                  'cbrs_unit', 'cbrs_unit_string', 'map_number', 'map_number_string', 'cbrs_map_date',
                   'determination', 'determination_string', 'prohibition_date', 'distance', 'fws_fo_received_date',
                   'fws_hq_received_date', 'final_letter_date', 'close_date', 'final_letter_recipient', 'analyst',
                   'analyst_string', 'analyst_signoff_date', 'qc_reviewer', 'qc_reviewer_string',
@@ -117,20 +117,8 @@ class WorkbenchSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Case
-        fields = ('id', 'case_hash', 'legacy_case_number', 'status', 'request_date', 'property_string',
-                  'cbrs_unit_string', 'distance', 'analyst_string', 'qc_reviewer_string', 'priority', 'on_hold',
-                  'invalid',)
-
-
-class ReportSerializer(serializers.ModelSerializer):
-    cbrs_unit_string = serializers.StringRelatedField(source='cbrs_unit')
-    property_string = serializers.StringRelatedField(source='property')
-    determination_string = serializers.StringRelatedField(source='determination')
-
-    class Meta:
-        model = Case
-        fields = ('id', 'status', 'prohibition_date', 'cbrs_unit_string', 'request_date', 'final_letter_date',
-                  'property_string', 'determination_string',)
+        fields = ('id', 'case_reference', 'status', 'request_date', 'property_string', 'cbrs_unit_string',
+                  'distance', 'analyst_string', 'qc_reviewer_string', 'priority', 'on_hold', 'invalid', 'duplicate',)
 
 
 class LetterSerializer(serializers.ModelSerializer):
@@ -156,12 +144,19 @@ class LetterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Case
-        fields = ('id', 'case_hash', 'request_date', 'determination', 'determination_string', 'cbrs_unit',
+        fields = ('id', 'case_reference', 'request_date', 'determination', 'determination_string', 'cbrs_unit',
                   'cbrs_unit_string', 'system_unit_type', 'prohibition_date', 'map_number', 'cbrs_map_date',
                   'final_letter_recipient', 'policy_number', 'property_street', 'property_unit', 'property_city',
                   'property_state', 'property_zipcode', 'legal_description', 'subdivision', 'salutation', 'first_name',
                   'last_name', 'requester_street', 'requester_unit', 'requester_city', 'requester_state',
                   'requester_zipcode', )
+
+
+class CaseIDSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Case
+        fields = ('id', 'case_reference',)
 
 
 class PropertySerializer(serializers.ModelSerializer):
@@ -269,6 +264,62 @@ class FieldOfficeSerializer(serializers.ModelSerializer):
         model = FieldOffice
         fields = ('id', 'field_office_number', 'field_office_name', 'field_agent_name', 'field_agent_email',
                   'city', 'state',)
+
+
+######
+#
+#  Reports
+#
+######
+
+
+class ReportSerializer(serializers.ModelSerializer):
+    property_string = serializers.StringRelatedField(source='property')
+    determination_string = serializers.StringRelatedField(source='determination')
+
+    class Meta:
+        model = Case
+        fields = ('id', 'status', 'request_date', 'close_date', 'property_string', 'determination_string',)
+
+
+class ReportCasesByUnitSerializer(serializers.ModelSerializer):
+    cbrs_unit_string = serializers.StringRelatedField(source='cbrs_unit')
+    property_string = serializers.StringRelatedField(source='property')
+    determination_string = serializers.StringRelatedField(source='determination')
+
+    class Meta:
+        model = Case
+        fields = ('id', 'status', 'prohibition_date', 'cbrs_unit_string', 'request_date', 'final_letter_date',
+                  'close_date', 'resolution_days', 'property_string', 'determination_string',)
+
+class ReportDaysToResolutionSerializer(serializers.ModelSerializer):
+    property_string = serializers.StringRelatedField(source='property')
+    determination_string = serializers.StringRelatedField(source='determination')
+
+    class Meta:
+        model = Case
+        fields = ('id', 'case_reference', 'status', 'request_date', 'analyst_signoff_date', 'qc_reviewer_signoff_date',
+                  'fws_reviewer_signoff_date', 'final_letter_date', 'close_date',  'close_days', 'analyst_signoff_days',
+                  'qc_reviewer_days', 'fws_reviewer_days', 'final_letter_days', 'property_string',
+                  'determination_string',)
+
+class ReportDaysToEachStatusSerializer(serializers.ModelSerializer):
+    property_string = serializers.StringRelatedField(source='property')
+    determination_string = serializers.StringRelatedField(source='determination')
+
+    class Meta:
+        model = Case
+        fields = ('id', 'status', 'request_date', 'final_letter_date',
+                  'close_date', 'property_string', 'determination_string',)
+
+class ReportNumberOfCasesByStatusSerializer(serializers.ModelSerializer):
+    property_string = serializers.StringRelatedField(source='property')
+    determination_string = serializers.StringRelatedField(source='determination')
+
+    class Meta:
+        model = Case
+        fields = ('id', 'status', 'request_date', 'final_letter_date',
+                  'close_date', 'property_string', 'determination_string',)
 
 
 ######
