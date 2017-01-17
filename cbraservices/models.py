@@ -394,11 +394,7 @@ class FieldOffice(HistoryModel):
         db_table = "cbra_fieldoffice"
 
 
-class ReportCase(models.Model):
-
-    def _get_id(self):
-        """Returns the id of the record"""
-        return '%s' % self.id
+class ReportCase(Case):
 
     def _get_analyst_signoff_days(self):
         """Returns the number of days needed to get analyst signoff (Awaiting QC Level 1 Date - Request Date)"""
@@ -440,43 +436,14 @@ class ReportCase(models.Model):
         else:
             return None
 
-    def _get_status(self):
-        """Returns the status of the record"""
-        if self.close_date and not self.final_letter_date:
-            return 'Closed with no Final Letter'
-        elif self.close_date:
-            return 'Final'
-        elif self.fws_reviewer_signoff_date:
-            return 'Awaiting Final Letter'
-        elif self.qc_reviewer_signoff_date:
-            return 'Awaiting Level 2 QC'
-        elif self.analyst_signoff_date:
-            return 'Awaiting Level 1 QC'
-        else:
-            return 'Received'
-
-    case_id = models.IntegerField(primary_key=True)
-    case_number = property(_get_id)
-    case_reference = models.CharField(max_length=255)
-    status = property(_get_status)
     analyst_signoff_days = property(_get_analyst_signoff_days)
     qc_reviewer_days = property(_get_qc_reviewer_days)
     fws_reviewer_days = property(_get_fws_reviewer_days)
     final_letter_days = property(_get_final_letter_days)
     close_days = property(_get_close_days)
-    request_date = models.DateField(default=date.today)
-    property = models.ForeignKey('Property', related_name='reportcases')
-    cbrs_unit = models.ForeignKey('SystemUnit', null=True, blank=True)
-    determination = models.ForeignKey('Determination', null=True, blank=True)
-    analyst_signoff_date = models.DateField()
-    qc_reviewer_signoff_date = models.DateField()
-    fws_reviewer_signoff_date = models.DateField()
-    final_letter_date = models.DateField()
-    close_date = models.DateField()
 
     def __str__(self):
-        return str(self.case_id)
+        return str(self.id)
 
     class Meta:
-        db_table = "cbra_case"
-        managed = False
+        proxy = True

@@ -278,7 +278,7 @@ class ReportSerializer(serializers.ModelSerializer):
     determination_string = serializers.StringRelatedField(source='determination')
 
     class Meta:
-        model = Case
+        model = ReportCase
         fields = ('id', 'status', 'request_date', 'close_date', 'property_string', 'determination_string',)
 
 
@@ -288,16 +288,16 @@ class ReportCasesByUnitSerializer(serializers.ModelSerializer):
     determination_string = serializers.StringRelatedField(source='determination')
 
     class Meta:
-        model = Case
+        model = ReportCase
         fields = ('id', 'status', 'prohibition_date', 'cbrs_unit_string', 'request_date', 'final_letter_date',
-                  'close_date', 'resolution_days', 'property_string', 'determination_string',)
+                  'close_date', 'close_days', 'property_string', 'determination_string',)
 
 class ReportDaysToResolutionSerializer(serializers.ModelSerializer):
     property_string = serializers.StringRelatedField(source='property')
     determination_string = serializers.StringRelatedField(source='determination')
 
     class Meta:
-        model = Case
+        model = ReportCase
         fields = ('id', 'case_reference', 'status', 'request_date', 'analyst_signoff_date', 'qc_reviewer_signoff_date',
                   'fws_reviewer_signoff_date', 'final_letter_date', 'close_date',  'close_days', 'analyst_signoff_days',
                   'qc_reviewer_days', 'fws_reviewer_days', 'final_letter_days', 'property_string',
@@ -308,7 +308,7 @@ class ReportDaysToEachStatusSerializer(serializers.ModelSerializer):
     determination_string = serializers.StringRelatedField(source='determination')
 
     class Meta:
-        model = Case
+        model = ReportCase
         fields = ('id', 'status', 'request_date', 'final_letter_date',
                   'close_date', 'property_string', 'determination_string',)
 
@@ -317,7 +317,7 @@ class ReportNumberOfCasesByStatusSerializer(serializers.ModelSerializer):
     determination_string = serializers.StringRelatedField(source='determination')
 
     class Meta:
-        model = Case
+        model = ReportCase
         fields = ('id', 'status', 'request_date', 'final_letter_date',
                   'close_date', 'property_string', 'determination_string',)
 
