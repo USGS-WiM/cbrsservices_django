@@ -1,7 +1,7 @@
 import json
 from datetime import datetime as dt
 from django.contrib.auth import authenticate, login, logout
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.db.models.expressions import RawSQL
 from rest_framework import views, viewsets, generics, permissions, authentication, status
 from rest_framework.response import Response
@@ -123,26 +123,17 @@ class CaseViewSet(HistoryViewSet):
         status = self.request.query_params.get('status', None)
         if status is not None:
             if status == 'Closed with no Final Letter':
-                queryset = queryset.filter(analyst_signoff_date__isnull=False,
-                                           qc_reviewer_signoff_date__isnull=False,
-                                           fws_reviewer_signoff_date__isnull=False,
-                                           close_date__isnull=False,
+                queryset = queryset.filter(close_date__isnull=False,
                                            final_letter_date__isnull=True)
             elif status == 'Final':
-                queryset = queryset.filter(analyst_signoff_date__isnull=False,
-                                           qc_reviewer_signoff_date__isnull=False,
-                                           fws_reviewer_signoff_date__isnull=False,
-                                           close_date__isnull=False,
+                queryset = queryset.filter(close_date__isnull=False,
                                            final_letter_date__isnull=False)
             elif status == 'Awaiting Final Letter':
-                queryset = queryset.filter(analyst_signoff_date__isnull=False,
-                                           qc_reviewer_signoff_date__isnull=False,
-                                           fws_reviewer_signoff_date__isnull=False,
+                queryset = queryset.filter(fws_reviewer_signoff_date__isnull=False,
                                            close_date__isnull=True,
                                            final_letter_date__isnull=True)
             elif status == 'Awaiting Level 2 QC':
-                queryset = queryset.filter(analyst_signoff_date__isnull=False,
-                                           qc_reviewer_signoff_date__isnull=False,
+                queryset = queryset.filter(qc_reviewer_signoff_date__isnull=False,
                                            fws_reviewer_signoff_date__isnull=True,
                                            close_date__isnull=True,
                                            final_letter_date__isnull=True)
@@ -525,11 +516,10 @@ class ReportCaseView(generics.ListAPIView):
             return ReportDaysToResolutionSerializer
         elif report is not None and report == 'daystoeachstatus':
             return ReportDaysToEachStatusSerializer
-        elif report is not None and report == 'numberofcasesbystatus':
-            return ReportNumberOfCasesByStatusSerializer
         else:
             return ReportSerializer
 
+    # override the default queryset to allow filtering by URL arguments
     def get_queryset(self):
         queryset = ReportCase.objects.all()
         # filter by CBRS unit IDs, exact list
@@ -538,6 +528,15 @@ class ReportCaseView(generics.ListAPIView):
             cbrs_unit_list = cbrs_unit.split(',')
             queryset = queryset.filter(cbrs_unit__in=cbrs_unit_list)
         return queryset
+
+
+class ReportCaseCountView(views.APIView):
+    permission_classes = (IsActive,)
+    serializer_class = ReportCountOfCasesByStatusSerializer
+
+    def get(self, request):
+        data = [ReportCase.report_case_counts.count_cases_by_status()]
+        return Response(data)
 
 
 ######
