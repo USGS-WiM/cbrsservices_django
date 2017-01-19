@@ -24,5 +24,6 @@ urlpatterns = patterns('',
                        url(r'^', include(router.urls)),
                        url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
                        url(r'^auth/$', views.AuthView.as_view(), name='authenticate'),
-                       url(r'^reportcases/$', views.ReportCaseView.as_view(), name='reportcases')
+                       url(r'^reportcases/$', views.ReportCaseView.as_view(), name='reportcases'),
+                       url(r'^reportcasecounts/$', views.ReportCaseCountView.as_view(), name='reportcasecounts')
                        )

@@ -394,6 +394,82 @@ class FieldOffice(HistoryModel):
         db_table = "cbra_fieldoffice"
 
 
+class ReportCaseCountsQuerySet(models.QuerySet):
+    def count_cases_by_status(self):
+        count_cases = self.count_closed().copy()
+        count_cases.update(self.count_closed_no_final_letter())
+        count_cases.update(self.count_awaiting_final_letter())
+        count_cases.update(self.count_awaiting_level_2_qc())
+        count_cases.update(self.count_awaiting_level_1_qc())
+        count_cases.update(self.count_received())
+        return count_cases
+
+    def count_closed_no_final_letter(self):
+        return self.filter(close_date__isnull=False,
+                           final_letter_date__isnull=True
+                           ).aggregate(count_closed_no_final_letter=models.Count('id'))
+
+    def count_closed(self):
+        return self.filter(close_date__isnull=False,
+                           final_letter_date__isnull=False
+                           ).aggregate(count_closed=models.Count('id'))
+
+    def count_awaiting_final_letter(self):
+        return self.filter(fws_reviewer_signoff_date__isnull=False,
+                           close_date__isnull=True,
+                           final_letter_date__isnull=True
+                           ).aggregate(count_awaiting_final_letter=models.Count('id'))
+
+    def count_awaiting_level_2_qc(self):
+        return self.filter(qc_reviewer_signoff_date__isnull=False,
+                           fws_reviewer_signoff_date__isnull=True,
+                           close_date__isnull=True,
+                           final_letter_date__isnull=True
+                           ).aggregate(count_awaiting_level_2_qc=models.Count('id'))
+
+    def count_awaiting_level_1_qc(self):
+        return self.filter(analyst_signoff_date__isnull=False,
+                           qc_reviewer_signoff_date__isnull=True,
+                           fws_reviewer_signoff_date__isnull=True,
+                           close_date__isnull=True,
+                           final_letter_date__isnull=True
+                           ).aggregate(count_awaiting_level_1_qc=models.Count('id'))
+
+    def count_received(self):
+        return self.filter(analyst_signoff_date__isnull=True,
+                           qc_reviewer_signoff_date__isnull=True,
+                           fws_reviewer_signoff_date__isnull=True,
+                           close_date__isnull=True,
+                           final_letter_date__isnull=True
+                           ).aggregate(count_received=models.Count('id'))
+
+
+class ReportCaseCountsManager(models.Manager):
+    def get_queryset(self):
+        return ReportCaseCountsQuerySet(self.model, using=self._db)
+
+    def count_cases_by_status(self):
+        return self.get_queryset().count_cases_by_status()
+
+    def count_closed_no_final_letter(self):
+        return self.get_queryset().count_closed_no_final_letter()
+
+    def count_closed(self):
+        return self.get_queryset().count_closed()
+
+    def count_awaiting_final_letter(self):
+        return self.get_queryset().count_awaiting_final_letter()
+
+    def count_awaiting_level_2_qc(self):
+        return self.get_queryset().count_awaiting_level_2_qc()
+
+    def count_awaiting_level_1_qc(self):
+        return self.get_queryset().count_awaiting_level_1_qc()
+
+    def count_received(self):
+        return self.get_queryset().count_received()
+
+
 class ReportCase(Case):
 
     def _get_analyst_signoff_days(self):
@@ -441,6 +517,7 @@ class ReportCase(Case):
     fws_reviewer_days = property(_get_fws_reviewer_days)
     final_letter_days = property(_get_final_letter_days)
     close_days = property(_get_close_days)
+    report_case_counts = ReportCaseCountsManager()
 
     def __str__(self):
         return str(self.id)

@@ -289,8 +289,8 @@ class ReportCasesByUnitSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ReportCase
-        fields = ('id', 'status', 'prohibition_date', 'cbrs_unit_string', 'request_date', 'final_letter_date',
-                  'close_date', 'close_days', 'property_string', 'determination_string',)
+        fields = ('id', 'status', 'prohibition_date', 'cbrs_unit_string', 'request_date', 'property_string',
+                  'determination_string',)
 
 class ReportDaysToResolutionSerializer(serializers.ModelSerializer):
     property_string = serializers.StringRelatedField(source='property')
@@ -298,9 +298,7 @@ class ReportDaysToResolutionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ReportCase
-        fields = ('id', 'case_reference', 'status', 'request_date', 'analyst_signoff_date', 'qc_reviewer_signoff_date',
-                  'fws_reviewer_signoff_date', 'final_letter_date', 'close_date',  'close_days', 'analyst_signoff_days',
-                  'qc_reviewer_days', 'fws_reviewer_days', 'final_letter_days', 'property_string',
+        fields = ('id', 'request_date', 'final_letter_date', 'close_date', 'close_days', 'property_string',
                   'determination_string',)
 
 class ReportDaysToEachStatusSerializer(serializers.ModelSerializer):
@@ -309,17 +307,18 @@ class ReportDaysToEachStatusSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ReportCase
-        fields = ('id', 'status', 'request_date', 'final_letter_date',
-                  'close_date', 'property_string', 'determination_string',)
+        fields = ('id', 'case_reference', 'status', 'request_date', 'analyst_signoff_date', 'qc_reviewer_signoff_date',
+                  'fws_reviewer_signoff_date', 'final_letter_date', 'close_date', 'close_days', 'analyst_signoff_days',
+                  'qc_reviewer_days', 'fws_reviewer_days', 'final_letter_days', 'property_string',
+                  'determination_string',)
 
-class ReportNumberOfCasesByStatusSerializer(serializers.ModelSerializer):
-    property_string = serializers.StringRelatedField(source='property')
-    determination_string = serializers.StringRelatedField(source='determination')
-
-    class Meta:
-        model = ReportCase
-        fields = ('id', 'status', 'request_date', 'final_letter_date',
-                  'close_date', 'property_string', 'determination_string',)
+class ReportCountOfCasesByStatusSerializer(serializers.Serializer):
+    count_received = serializers.IntegerField()
+    count_awaiting_level_1_qc = serializers.IntegerField()
+    count_awaiting_level_2_qc = serializers.IntegerField()
+    count_awaiting_final_letter = serializers.IntegerField()
+    count_closed = serializers.IntegerField()
+    count_closed_no_final_letter = serializers.IntegerField()
 
 
 ######
