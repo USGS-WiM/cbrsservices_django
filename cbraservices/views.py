@@ -423,6 +423,7 @@ class CommentViewSet(HistoryViewSet):
     # queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     # permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (IsOwnerOrReadOnly,)
 
     # override the default queryset to allow filtering by URL arguments
     def get_queryset(self):
@@ -430,7 +431,7 @@ class CommentViewSet(HistoryViewSet):
         # filter by case ID, exact
         case_id = self.request.query_params.get('case', None)
         if case_id is not None:
-            queryset = queryset.filter(case_id__exact=case_id)
+            queryset = queryset.filter(acase_id__exact=case_id)
         return queryset
 
 
