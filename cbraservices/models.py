@@ -256,14 +256,14 @@ class Comment(HistoryModel):
     """
 
     comment = models.TextField()
-    case = models.ForeignKey('Case', related_name='comments')
+    acase = models.ForeignKey('Case', related_name='comments')
 
     def __str__(self):
         return self.comment
 
     class Meta:
         db_table = "cbra_comment"
-        unique_together = ("comment", "case")
+        unique_together = ("comment", "acase")
         ordering = ['-id']
 
 
