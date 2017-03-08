@@ -22,6 +22,7 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         DOC_FONT_TYPE = 'Times New Roman'
         DOC_FONT_SMALL = Pt(8)
         DOC_FONT_LARGE = Pt(12)
+        DOC_LINE_SPACING = 1
 
         # case fields
         id = str(data[0]['id'])
@@ -31,9 +32,9 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         determination_string = data[0]['determination_string'] or ""
         cbrs_unit = data[0]['cbrs_unit_string'] or ""
         system_unit_type = data[0]['system_unit_type'] or ""
-        prohibition_date = data[0]['prohibition_date'] or ""
+        prohibition_date = (data[0]['prohibition_date']).strftime('%B %-d, Y') or ""
         map_number = str(data[0]['map_number']) or ""
-        map_date = datetime.strptime(data[0]['cbrs_map_date'], '%Y-%m-%d').strftime('%B %d, %Y') or ""
+        map_date = datetime.strptime(data[0]['cbrs_map_date'], '%Y-%m-%d').strftime('%B %-d, %Y') or ""
         final_letter_recipient = data[0]['final_letter_recipient'] or ""
 
         # property fields
@@ -68,19 +69,19 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         requester_full_address += requester_street + "\n"
         requester_full_address += requester_city + ", " + requester_state + " " + requester_zipcode + "\n\n"
 
-        salutation = "Dear " + requester_salutation + " " + requester_last_name + ":"
+        salutation = "Dear " + requester_salutation + " " + requester_last_name + ","
 
         intro = "The U.S. Fish and Wildlife Service (Service) has reviewed the request dated " + request_date + ","
         intro += " Case " + case_reference + ", for a determination as to whether the following property"
         intro += " is within a System Unit or an Otherwise Protected Area (OPA) of the John H. Chafee"
-        intro += " Coastal Barrier Resources System (CBRS)."
+        intro += " Coastal Barrier Resources System (CBRS). "
         if property_policy_number != "":
             intro += "The flood insurance policy number for the submitted request is " + property_policy_number + "."
 
         property_address = "Address:\t\t"
         if property_unit != "":
             property_address += property_unit + " "
-        property_address += property_street + ", " + property_city + ", " + property_state + " " + property_zipcode
+        property_address += property_street + ",\n" + property_city + ", " + property_state + " " + property_zipcode
 
         legal_description = "Legal Description:\t"
         if property_legal_description != "":
@@ -129,6 +130,8 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         # assemble the content sections into a document with proper formatting
 
         document = Document()
+        paragraph_format = document.styles['Normal'].paragraph_format
+        paragraph_format.line_spacing = DOC_LINE_SPACING
         sections = document.sections
         for section in sections:
             section.top_margin = Inches(1.6)
