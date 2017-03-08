@@ -220,14 +220,18 @@ class CaseViewSet(HistoryViewSet):
         priority = self.request.query_params.get('priority', None)
         if priority is not None:
             queryset = queryset.filter(priority__exact=priority)
-        # # filter by on_hold, exact
-        # on_hold = self.request.query_params.get('on_hold', None)
-        # if on_hold is not None:
-        #     queryset = queryset.filter(on_hold__exact=on_hold)
-        # # filter by invalid, exact
-        # invalid = self.request.query_params.get('invalid', None)
-        # if invalid is not None:
-        #     queryset = queryset.filter(invalid__exact=invalid)
+        # filter by on_hold, exact
+        on_hold = self.request.query_params.get('on_hold', None)
+        if on_hold is not None:
+            queryset = queryset.filter(on_hold__exact=on_hold)
+        # filter by invalid, exact
+        invalid = self.request.query_params.get('invalid', None)
+        if invalid is not None:
+            queryset = queryset.filter(invalid__exact=invalid)
+        # filter by duplicate, exact
+        duplicate = self.request.query_params.get('duplicate', None)
+        if duplicate is not None:
+            queryset = queryset.filter(duplicate__exact=duplicate)
         # filter by fiscal year, exact
         fiscal_year = self.request.query_params.get('fiscal_year', None)
         if fiscal_year is not None:
