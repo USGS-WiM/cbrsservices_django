@@ -27,14 +27,20 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         # case fields
         id = str(data[0]['id'])
         case_reference = data[0]['case_reference'] or ""
-        request_date = datetime.strptime(data[0]['request_date'], '%Y-%m-%d').strftime('%B %-d, %Y') or ""
+        request_date = data[0]['request_date'] or ""
+        if request_date:
+            request_date = datetime.strptime(data[0]['request_date'], '%Y-%m-%d').strftime('%B %-d, %Y')
         determination = data[0]['determination'] or ""
         determination_string = data[0]['determination_string'] or ""
         cbrs_unit = data[0]['cbrs_unit_string'] or ""
         system_unit_type = data[0]['system_unit_type'] or ""
-        prohibition_date = datetime.strptime(data[0]['prohibition_date'], '%Y-%m-%d').strftime('%B %-d, %Y') or ""
+        prohibition_date = data[0]['prohibition_date'] or ""
+        if prohibition_date:
+            prohibition_date = datetime.strptime(data[0]['prohibition_date'], '%Y-%m-%d').strftime('%B %-d, %Y')
         map_number = str(data[0]['map_number']) or ""
-        map_date = datetime.strptime(data[0]['cbrs_map_date'], '%Y-%m-%d').strftime('%B %-d, %Y') or ""
+        map_date = data[0]['map_date'] or ""
+        if map_date:
+            map_date = datetime.strptime(data[0]['map_date'], '%Y-%m-%d').strftime('%B %-d, %Y')
         final_letter_recipient = data[0]['final_letter_recipient'] or ""
 
         # property fields
