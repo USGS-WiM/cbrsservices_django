@@ -27,12 +27,12 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         # case fields
         id = str(data[0]['id'])
         case_reference = data[0]['case_reference'] or ""
-        request_date = datetime.strptime(data[0]['request_date'], '%Y-%m-%d').strftime('%B %d, %Y') or ""
+        request_date = datetime.strptime(data[0]['request_date'], '%Y-%m-%d').strftime('%B %-d, %Y') or ""
         determination = data[0]['determination'] or ""
         determination_string = data[0]['determination_string'] or ""
         cbrs_unit = data[0]['cbrs_unit_string'] or ""
         system_unit_type = data[0]['system_unit_type'] or ""
-        prohibition_date = (data[0]['prohibition_date']).strftime('%B %-d, Y') or ""
+        prohibition_date = datetime.strptime(data[0]['prohibition_date'], '%Y-%m-%d').strftime('%B %-d, %Y') or ""
         map_number = str(data[0]['map_number']) or ""
         map_date = datetime.strptime(data[0]['cbrs_map_date'], '%Y-%m-%d').strftime('%B %-d, %Y') or ""
         final_letter_recipient = data[0]['final_letter_recipient'] or ""
@@ -81,7 +81,7 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         property_address = "Address:\t\t"
         if property_unit != "":
             property_address += property_unit + " "
-        property_address += property_street + ",\n" + property_city + ", " + property_state + " " + property_zipcode
+        property_address += property_street + ",\n\t\t" + property_city + ", " + property_state + " " + property_zipcode
 
         legal_description = "Legal Description:\t"
         if property_legal_description != "":
