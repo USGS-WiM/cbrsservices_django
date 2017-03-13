@@ -38,9 +38,9 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         if prohibition_date:
             prohibition_date = datetime.strptime(data[0]['prohibition_date'], '%Y-%m-%d').strftime('%B %-d, %Y')
         map_number = str(data[0]['map_number']) or ""
-        map_date = data[0]['map_date'] or ""
-        if map_date:
-            map_date = datetime.strptime(data[0]['map_date'], '%Y-%m-%d').strftime('%B %-d, %Y')
+        cbrs_map_date = data[0]['cbrs_map_date'] or ""
+        if cbrs_map_date:
+            cbrs_map_date = datetime.strptime(data[0]['cbrs_map_date'], '%Y-%m-%d').strftime('%B %-d, %Y')
         final_letter_recipient = data[0]['final_letter_recipient'] or ""
 
         # property fields
@@ -98,7 +98,7 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
             legal_description += "(none submitted)"
 
         details = "We compared the location of the property above, as depicted on the information that was provided,"
-        details += " to the official CBRS map for the area, numbered " + map_number + ", dated " + map_date + ". "
+        details += " to the official CBRS map for the area, numbered " + map_number + ", dated " + cbrs_map_date + ". "
 
         # 1:In, 2:Out, 3:Partially In; Structure In, 4:Partially In; Structure Out, 5:Partially In/No Structure
         if determination == 1:
