@@ -84,12 +84,12 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         if property_policy_number != "":
             intro += "The flood insurance policy number for the submitted request is " + property_policy_number + "."
 
-        property_address = "Address:\t\t"
+        property_address = "Address:\t\t\t"
         if property_unit != "":
             property_address += property_unit + " "
-        property_address += property_street + ",\n\t\t" + property_city + ", " + property_state + " " + property_zipcode
+        property_address += property_street + ",\n\t\t\t\t" + property_city + ", " + property_state + " " + property_zipcode
 
-        legal_description = "Legal Description:\t"
+        legal_description = "Legal Description:\t\t"
         if property_legal_description != "":
             legal_description += property_legal_description + " "
         elif property_subdivision != "":
@@ -121,7 +121,7 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
             details += "A determination has not been made."
 
         closing = "We hope this information is helpful. Additional information concerning the CBRS can be found"
-        closing += " on our website at http://www.fws.gov/cbra. If you have any additional questions, please contact"
+        closing += " on our website at https://www.fws.gov/cbra/. If you have any additional questions, please contact"
         closing += " Ms. Terri Fish, Program Specialist, at (703) 358-2171.\n"
 
         signature = "\t\t\t\t\t\tSincerely,\n\n\n\n\n"
