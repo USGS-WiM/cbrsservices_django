@@ -239,9 +239,11 @@ class SystemUnitSerializer(serializers.ModelSerializer):
 
 class SystemUnitProhibitionDateSerializer(serializers.ModelSerializer):
 
+    prohibition_date_mdy = serializers.DateField(format='%m/%d/%Y', source='prohibition_date')
+
     class Meta:
         model = SystemUnitProhibitionDate
-        fields = ('id', 'prohibition_date', 'system_unit',)
+        fields = ('id', 'prohibition_date', 'prohibition_date_mdy', 'system_unit',)
 
 
 class SystemUnitMapSerializer(serializers.ModelSerializer):
