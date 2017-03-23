@@ -228,10 +228,12 @@ class CaseViewSet(HistoryViewSet):
         invalid = self.request.query_params.get('invalid', None)
         if invalid is not None:
             queryset = queryset.filter(invalid__exact=invalid)
-        # filter by duplicate, exact
+        # filter by duplicate, exact (also include the original case, per cooperator request)
         duplicate = self.request.query_params.get('duplicate', None)
         if duplicate is not None:
-            queryset = queryset.filter(duplicate__exact=duplicate)
+            queryset = queryset.filter(
+                Q(id__exact=duplicate) |
+                Q(duplicate__exact=duplicate))
         # filter by fiscal year, exact
         fiscal_year = self.request.query_params.get('fiscal_year', None)
         if fiscal_year is not None:

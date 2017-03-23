@@ -4,6 +4,7 @@ from docx import Document
 from docx.shared import Pt
 from docx.shared import Inches
 from io import BytesIO
+from localflavor.us import us_states
 
 
 class DOCXRenderer(renderers.BaseRenderer):
@@ -53,7 +54,8 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         property_state = data[0]['property_state'] or ""
         property_zipcode = data[0]['property_zipcode'] or ""
 
-
+        if property_state != "":
+            property_state = str(next(name for abbrev, name in us_states.US_STATES if abbrev == property_state))
 
         # requester fields
         requester_salutation = data[0]['salutation'] or ""
@@ -64,6 +66,9 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         requester_city = data[0]['requester_city'] or ""
         requester_state = data[0]['requester_state'] or ""
         requester_zipcode = data[0]['requester_zipcode'] or ""
+
+        if requester_state != "":
+            requester_state = str(next(name for abbrev, name in us_states.US_STATES if abbrev == requester_state))
 
         # letter content sections
 
@@ -87,7 +92,7 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         property_address = "Address:\t\t\t"
         if property_unit != "":
             property_address += property_unit + " "
-        property_address += property_street + ",\n\t\t\t\t" + property_city + ", " + property_state + " " + property_zipcode
+        property_address += property_street + "\n\t\t\t\t" + property_city + ", " + property_state + " " + property_zipcode
 
         legal_description = "Legal Description:\t\t"
         if property_legal_description != "":
