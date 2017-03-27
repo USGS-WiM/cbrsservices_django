@@ -1,9 +1,10 @@
+import os
 import hashlib
 import base64
 from django.core.mail import send_mail, EmailMessage
 from django.core.exceptions import ValidationError
 from django.dispatch import receiver
-from django.db.models.signals import post_save, pre_delete
+from django.db.models.signals import post_save, pre_delete, post_delete
 from cbraservices import models
 
 
@@ -76,4 +77,18 @@ def tag_pre_delete(sender, **kwargs):
     tag = kwargs['instance']
     casetags = models.CaseTag.objects.all().filter(tag__exact=tag.id)
     if casetags.length > 0:
-        raise ValidationError("This tag cannot be removed because it is assigned to one or more determination cases.")
+        #raise ValidationError("This tag cannot be removed because it is assigned to one or more determination cases.")
+        models.CaseTag.objects.all().filter(tag__exact=tag.id).delete()
+
+
+# listen for casefile deletes, and delete the actual file from the physical storage
+@receiver(post_delete, sender=models.CaseFile)
+def casefile_post_delete(sender, **kwargs):
+    casefile = kwargs['instance']
+    print(casefile)
+
+    if casefile.file:
+        print(casefile.file)
+        if os.path.isfile(casefile.file.path):
+            print(casefile.file.path)
+            os.remove(casefile.file.path)

@@ -394,6 +394,13 @@ class FieldOffice(HistoryModel):
         db_table = "cbra_fieldoffice"
 
 
+######
+#
+#  Reports
+#
+######
+
+
 class ReportCaseCountsQuerySet(models.QuerySet):
     def count_cases_by_status(self):
         count_cases = self.count_closed().copy()
