@@ -285,14 +285,21 @@ class ReportSerializer(serializers.ModelSerializer):
 
 
 class ReportCasesByUnitSerializer(serializers.ModelSerializer):
+    def get_street_address(self, obj):
+        prop = obj.property
+        prop_street = Property.objects.filter(id=prop.id).values_list('street', flat=True)[0]
+        prop_street_address = prop_street.split(",")[0]
+        return prop_street_address
+
     cbrs_unit_string = serializers.StringRelatedField(source='cbrs_unit')
     property_string = serializers.StringRelatedField(source='property')
     determination_string = serializers.StringRelatedField(source='determination')
+    street_address = serializers.SerializerMethodField()
 
     class Meta:
         model = ReportCase
         fields = ('id', 'status', 'prohibition_date', 'cbrs_unit_string', 'request_date', 'property_string',
-                  'determination_string',)
+                  'determination_string', 'street_address')
 
 class ReportDaysToResolutionSerializer(serializers.ModelSerializer):
     property_string = serializers.StringRelatedField(source='property')

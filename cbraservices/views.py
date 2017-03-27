@@ -9,6 +9,7 @@ from rest_framework.settings import api_settings
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework_extensions.cache.mixins import CacheResponseMixin
 from rest_framework_extensions.cache.mixins import ListCacheResponseMixin
+from rest_framework_csv.renderers import CSVRenderer
 from cbraservices.serializers import *
 from cbraservices.models import *
 from cbraservices.permissions import *
@@ -231,9 +232,12 @@ class CaseViewSet(HistoryViewSet):
         # filter by duplicate, exact (also include the original case, per cooperator request)
         duplicate = self.request.query_params.get('duplicate', None)
         if duplicate is not None:
-            queryset = queryset.filter(
-                Q(id__exact=duplicate) |
-                Q(duplicate__exact=duplicate))
+            if duplicate == 'none':
+                queryset = queryset.filter(duplicate__isnull=True)
+            else:
+                queryset = queryset.filter(
+                    Q(id__exact=duplicate) |
+                    Q(duplicate__exact=duplicate))
         # filter by fiscal year, exact
         fiscal_year = self.request.query_params.get('fiscal_year', None)
         if fiscal_year is not None:
@@ -512,37 +516,100 @@ class FieldOfficeViewSet(HistoryViewSet):
 class ReportCaseView(generics.ListAPIView):
     permission_classes = (IsActive,)
     pagination_class = StandardResultsSetPagination
+    filename = ""
+
+    # override the default renderers to use a custom csv renderer when requested
+    # note that these custom renderers have hard-coded field name headers that match the their respective serialzers
+    # from when this code was originally written, so if the serializer fields change, these renderer field name headers
+    # won't match the serializer data, until the renderer code is manually updated to match the serializer fields
+    def get_renderers(self):
+        frmt = self.request.query_params.get('format', None)
+        report = self.request.query_params.get('report', None)
+        if frmt is not None and frmt == 'csv':
+            if report is not None and report == 'casesbyunit':
+                renderer_classes = (ReportCasesByUnitCSVRenderer,) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)
+            elif report is not None and report == 'daystoresolution':
+                renderer_classes = (ReportDaysToResolutionCSVRenderer,) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)
+            elif report is not None and report == 'daystoeachstatus':
+                renderer_classes = (ReportDaysToEachStatusCSVRenderer,) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)
+            else:
+                renderer_classes = (PaginatedCSVRenderer,) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)
+        else:
+            renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES)
+        return [renderer_class() for renderer_class in renderer_classes]
 
     # override the default serializer_class if format is specified
     def get_serializer_class(self):
         report = self.request.query_params.get('report', None)
+        cbrs_unit = self.request.query_params.get('cbrs_unit', None)
         # if report is not specified or not equal to an approved report, assume generic report
         if report is not None and report == 'casesbyunit':
+            self.filename = "Report_CasesByUnit_"
+            if cbrs_unit is not None:
+                self.filename += cbrs_unit + "_"
             return ReportCasesByUnitSerializer
         elif report is not None and report == 'daystoresolution':
+            self.filename = "Report_DaysToResolution_"
             return ReportDaysToResolutionSerializer
         elif report is not None and report == 'daystoeachstatus':
+            self.filename = "Report_DaysToEachStatus_"
             return ReportDaysToEachStatusSerializer
         else:
             return ReportSerializer
 
+    # override the default finalize_response to assign a filename to CSV files
+    # see https://github.com/mjumbewu/django-rest-framework-csv/issues/15
+    def finalize_response(self, request, response, *args, **kwargs):
+        response = super(generics.ListAPIView, self).finalize_response(request, response, *args, **kwargs)
+        if self.request.accepted_renderer.format == 'csv':
+            self.filename += dt.now().strftime("%Y") + '-' + dt.now().strftime("%m") + '-' + dt.now().strftime(
+                "%d") + '.csv'
+            print(self.filename)
+            response['Content-Disposition'] = "attachment; filename=%s" % self.filename
+            response['Access-Control-Expose-Headers'] = 'Content-Disposition'
+        return response
+
     # override the default queryset to allow filtering by URL arguments
     def get_queryset(self):
-        queryset = ReportCase.objects.all()
+        queryset = ReportCase.objects.all().order_by('id')
         # filter by CBRS unit IDs, exact list
         cbrs_unit = self.request.query_params.get('cbrs_unit', None)
         if cbrs_unit is not None:
             cbrs_unit_list = cbrs_unit.split(',')
-            queryset = queryset.filter(cbrs_unit__in=cbrs_unit_list)
+            queryset = queryset.filter(cbrs_unit__in=cbrs_unit_list).order_by('id')
         return queryset
 
 
 class ReportCaseCountView(views.APIView):
     permission_classes = (IsActive,)
     serializer_class = ReportCountOfCasesByStatusSerializer
+    filename = "Report_CountCasesByStatus_"
+
+    # override the default renderers to use a custom csv renderer when requested
+    # note that these custom renderers have hard-coded field name headers that match the their respective serialzers
+    # from when this code was originally written, so if the serializer fields change, these renderer field name headers
+    # won't match the serializer data, until the renderer code is manually updated to match the serializer fields
+    def get_renderers(self):
+        frmt = self.request.query_params.get('format', None)
+        if frmt is not None and frmt == 'csv':
+            renderer_classes = (ReportCaseCountCSVRenderer,) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)
+        else:
+            renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES)
+        return [renderer_class() for renderer_class in renderer_classes]
+
+    # override the default finalize_response to assign a filename to CSV files
+    # see https://github.com/mjumbewu/django-rest-framework-csv/issues/15
+    def finalize_response(self, request, response, *args, **kwargs):
+        response = super(ReportCaseCountView, self).finalize_response(request, response, *args, **kwargs)
+        if self.request.accepted_renderer.format == 'csv':
+            self.filename += dt.now().strftime("%Y") + '-' + dt.now().strftime("%m") + '-' + dt.now().strftime(
+                "%d") + '.csv'
+            response['Content-Disposition'] = "attachment; filename=%s" % self.filename
+            response['Access-Control-Expose-Headers'] = 'Content-Disposition'
+        return response
 
     def get(self, request):
-        data = [ReportCase.report_case_counts.count_cases_by_status()]
+        data = [ReportCase.report_case_counts.count_cases_by_status().order_by('id')]
         return Response(data)
 
 
@@ -571,7 +638,7 @@ class AuthView(views.APIView):
     authentication_classes = (authentication.BasicAuthentication,)
     serializer_class = UserSerializer
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         return Response(self.serializer_class(request.user).data)
 
 

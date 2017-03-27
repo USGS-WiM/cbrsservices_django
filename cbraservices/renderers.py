@@ -5,6 +5,76 @@ from docx.shared import Pt
 from docx.shared import Inches
 from io import BytesIO
 from localflavor.us import us_states
+from rest_framework_csv.renderers import CSVRenderer
+
+
+class PaginatedCSVRenderer (CSVRenderer):
+    results_field = 'results'
+
+    def render(self, data, *args, **kwargs):
+        if not isinstance(data, list):
+            data = data.get(self.results_field, [])
+        return super(PaginatedCSVRenderer, self).render(data, *args, **kwargs)
+
+
+class ReportCasesByUnitCSVRenderer (PaginatedCSVRenderer):
+    header = ['id', 'status', 'prohibition_date', 'cbrs_unit_string',
+              'request_date', 'final_letter_date', 'determination_string', 'street_address']
+    labels = {
+        'id': 'Case ID',
+        'status': 'Status',
+        'prohibition_date': 'Prohibition Date',
+        'cbrs_unit_string': 'CBRS Unit',
+        'request_date': 'Request Date',
+        'final_letter_date': 'Final Letter Date',
+        'determination_string': 'Determination',
+        'street_address': 'Street Address'
+    }
+
+
+class ReportDaysToResolutionCSVRenderer (PaginatedCSVRenderer):
+    header = ['id', 'case_reference', 'request_date', 'close_date', 'close_days']
+    labels = {
+        'id': 'Case ID',
+        'case_reference': 'Case Reference',
+        'request_date': 'Request Date',
+        'close_date': 'Close Date',
+        'close_days': 'Days to Close'
+    }
+
+
+class ReportDaysToEachStatusCSVRenderer (PaginatedCSVRenderer):
+    header = ['id', 'case_reference', 'request_date', 'analyst_signoff_date', 'analyst_days',
+              'qc_reviewer_signoff_date', 'qc_reviewer_days', 'fws_reviewer_signoff_date', 'fws_reviewer_days',
+              'final_letter_date', 'final_letter_days', 'close_date', 'close_days']
+    labels = {
+        'id': 'Case ID',
+        'case_reference': 'Case Reference',
+        'request_date': 'Request Date',
+        'analyst_signoff_date': 'Awaiting Level 1 QC',
+        'analyst_days': 'Days to Level 1 QC',
+        'qc_reviewer_signoff_date': 'Awaiting Level 2 QC Date',
+        'qc_reviewer_days': 'Days to Awaiting Level 2 QC',
+        'fws_reviewer_signoff_date': 'Awaiting Final Letter Date',
+        'fws_reviewer_days': 'Days to Awaiting Final Letter',
+        'final_letter_date': 'Final Letter Date',
+        'final_letter_days': 'Days to Final Letter',
+        'close_date': 'Close Date',
+        'close_days': 'Days to Close'
+    }
+
+
+class ReportCaseCountCSVRenderer (CSVRenderer):
+    header = ['count_received', 'count_awaiting_level_1_qc', 'count_awaiting_level_2_qc',
+              'count_awaiting_final_letter', 'count_closed', 'count_closed_no_final_letter']
+    labels = {
+        'count_received': 'Count Received',
+        'count_awaiting_level_1_qc': 'Count Awaiting Level 1 QC',
+        'count_awaiting_level_2_qc': 'Count Awaiting Level 2 QC',
+        'count_awaiting_final_letter': 'Count Awaiting Final Letter',
+        'count_closed': 'Count Closed',
+        'count_closed_no_final_letter': 'Count Closed with No Final Letter'
+    }
 
 
 class DOCXRenderer(renderers.BaseRenderer):
