@@ -27,7 +27,7 @@ class CaseFileSerializer(serializers.ModelSerializer):
             # on Linux during installation; the magic_file shouldn't need to be explicitly referenced on Linux
             filemagic = None
             if platform.system() == 'Windows':
-                magic_file = "C:\Program Files (x86)\GnuWin32\share\misc\magic"
+                magic_file = "D:\software\libmagicwin64\magic.mgc"
                 filemagic = magic.Magic(magic_file=magic_file, mime=True)
             else:
                 filemagic = magic.Magic(mime=True)
@@ -156,7 +156,7 @@ class CaseIDSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Case
-        fields = ('id', 'case_reference',)
+        fields = ('id', 'case_reference', 'duplicate')
 
 
 class PropertySerializer(serializers.ModelSerializer):
