@@ -61,10 +61,11 @@ def case_post_save(sender, **kwargs):
         reply_to_list = [cbra_email_address, ]
         headers = None  # {'Message-ID': 'foo'}
         attachments = []
-        for casefile in case.casefiles:
-            if casefile.final_letter:
-                attachments.append(casefile)
-                break
+        if case.casefiles:
+            for casefile in case.casefiles:
+                if casefile.final_letter:
+                    attachments.append(casefile)
+                    break
         #send_mail(subject, message, from_address, to_addresses_list, fail_silently=False)
         email = EmailMessage(subject, body, from_address, to_addresses_list, bcc_addresses_list,
                              reply_to=reply_to_list, headers=headers, attachments=attachments)
@@ -76,7 +77,7 @@ def case_post_save(sender, **kwargs):
 def tag_pre_delete(sender, **kwargs):
     tag = kwargs['instance']
     casetags = models.CaseTag.objects.all().filter(tag__exact=tag.id)
-    if casetags.length > 0:
+    if len(casetags) > 0:
         #raise ValidationError("This tag cannot be removed because it is assigned to one or more determination cases.")
         models.CaseTag.objects.all().filter(tag__exact=tag.id).delete()
 
