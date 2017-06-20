@@ -1,4 +1,5 @@
 import json
+from itertools import chain
 from datetime import datetime as dt
 from django.contrib.auth import authenticate, login, logout
 from django.db.models import Q, Count
@@ -609,7 +610,7 @@ class ReportCaseCountView(views.APIView):
         return response
 
     def get(self, request):
-        data = [ReportCase.report_case_counts.count_cases_by_status().order_by('id')]
+        data = [ReportCase.report_case_counts.count_cases_by_status()]
         return Response(data)
 
 
@@ -631,6 +632,22 @@ class UserViewSet(HistoryViewSet):
         username = self.request.query_params.get('username', None)
         if username is not None:
             queryset = queryset.filter(username__exact=username)
+        # filter by is_active, exact
+        is_active = self.request.query_params.get('is_active', None)
+        if is_active is not None:
+            queryset = queryset.filter(is_active__exact=is_active)
+        # filter by current and former active users
+        used_users = self.request.query_params.get('used_users', None)
+        if used_users is not None:
+            analysts = queryset.filter(analyst__isnull=False).distinct()
+            qc_reviewers = queryset.filter(qc_reviewer__isnull=False).distinct()
+            fws_reviewers = queryset.filter(fws_reviewer__isnull=False).distinct()
+            used_users_chain = list(chain(analysts, qc_reviewers, fws_reviewers))
+            used_users_set = set(used_users_chain)
+            used_users_ids = []
+            for used_user in used_users_set:
+                used_users_ids.append(used_user.id)
+            queryset = queryset.filter(id__in=used_users_ids).extra(order_by=['-is_active', 'username'])
         return queryset
 
 
