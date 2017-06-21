@@ -78,12 +78,10 @@ class Case(HistoryModel):
             return 'Closed with no Final Letter'
         elif self.close_date:
             return 'Final'
-        elif self.fws_reviewer_signoff_date:
-            return 'Awaiting Final Letter'
         elif self.qc_reviewer_signoff_date:
-            return 'Awaiting Level 2 QC'
+            return 'Awaiting Final Letter'
         elif self.analyst_signoff_date:
-            return 'Awaiting Level 1 QC'
+            return 'Awaiting QC'
         else:
             return 'Received'
 
@@ -406,8 +404,7 @@ class ReportCaseCountsQuerySet(models.QuerySet):
         count_cases = self.count_closed().copy()
         count_cases.update(self.count_closed_no_final_letter())
         count_cases.update(self.count_awaiting_final_letter())
-        count_cases.update(self.count_awaiting_level_2_qc())
-        count_cases.update(self.count_awaiting_level_1_qc())
+        count_cases.update(self.count_awaiting_qc())
         count_cases.update(self.count_received())
         return count_cases
 
@@ -422,22 +419,14 @@ class ReportCaseCountsQuerySet(models.QuerySet):
                            ).aggregate(count_closed=models.Count('id'))
 
     def count_awaiting_final_letter(self):
-        return self.filter(fws_reviewer_signoff_date__isnull=False,
+        return self.filter(qc_reviewer_signoff_date__isnull=False,
                            close_date__isnull=True,
                            final_letter_date__isnull=True
                            ).aggregate(count_awaiting_final_letter=models.Count('id'))
 
-    def count_awaiting_level_2_qc(self):
-        return self.filter(qc_reviewer_signoff_date__isnull=False,
-                           fws_reviewer_signoff_date__isnull=True,
-                           close_date__isnull=True,
-                           final_letter_date__isnull=True
-                           ).aggregate(count_awaiting_level_2_qc=models.Count('id'))
-
-    def count_awaiting_level_1_qc(self):
+    def count_awaiting_qc(self):
         return self.filter(analyst_signoff_date__isnull=False,
                            qc_reviewer_signoff_date__isnull=True,
-                           fws_reviewer_signoff_date__isnull=True,
                            close_date__isnull=True,
                            final_letter_date__isnull=True
                            ).aggregate(count_awaiting_level_1_qc=models.Count('id'))
@@ -445,7 +434,6 @@ class ReportCaseCountsQuerySet(models.QuerySet):
     def count_received(self):
         return self.filter(analyst_signoff_date__isnull=True,
                            qc_reviewer_signoff_date__isnull=True,
-                           fws_reviewer_signoff_date__isnull=True,
                            close_date__isnull=True,
                            final_letter_date__isnull=True
                            ).aggregate(count_received=models.Count('id'))
@@ -467,11 +455,8 @@ class ReportCaseCountsManager(models.Manager):
     def count_awaiting_final_letter(self):
         return self.get_queryset().count_awaiting_final_letter()
 
-    def count_awaiting_level_2_qc(self):
-        return self.get_queryset().count_awaiting_level_2_qc()
-
-    def count_awaiting_level_1_qc(self):
-        return self.get_queryset().count_awaiting_level_1_qc()
+    def count_awaiting_qc(self):
+        return self.get_queryset().count_awaiting_qc()
 
     def count_received(self):
         return self.get_queryset().count_received()
@@ -495,14 +480,6 @@ class ReportCase(Case):
         else:
             return None
 
-    def _get_fws_reviewer_days(self):
-        """Returns the number of days needed to get fws reviewer signoff (Awaiting Final Letter Date - Request Date)"""
-        if self.request_date and self.fws_reviewer_signoff_date:
-            fws_reviewer_time = self.fws_reviewer_signoff_date - self.request_date
-            return fws_reviewer_time.days
-        else:
-            return None
-
     def _get_final_letter_days(self):
         """Returns the number of days needed to get the final letter (Final Letter Date - Request Date)"""
         if self.request_date and self.final_letter_date:
@@ -521,7 +498,6 @@ class ReportCase(Case):
 
     analyst_days = property(_get_analyst_days)
     qc_reviewer_days = property(_get_qc_reviewer_days)
-    fws_reviewer_days = property(_get_fws_reviewer_days)
     final_letter_days = property(_get_final_letter_days)
     close_days = property(_get_close_days)
     report_case_counts = ReportCaseCountsManager()

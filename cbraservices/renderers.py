@@ -45,18 +45,16 @@ class ReportDaysToResolutionCSVRenderer (PaginatedCSVRenderer):
 
 class ReportDaysToEachStatusCSVRenderer (PaginatedCSVRenderer):
     header = ['id', 'case_reference', 'request_date', 'analyst_signoff_date', 'analyst_days',
-              'qc_reviewer_signoff_date', 'qc_reviewer_days', 'fws_reviewer_signoff_date', 'fws_reviewer_days',
-              'final_letter_date', 'final_letter_days', 'close_date', 'close_days']
+              'qc_reviewer_signoff_date', 'qc_reviewer_days', 'final_letter_date', 'final_letter_days',
+              'close_date', 'close_days']
     labels = {
         'id': 'Case ID',
         'case_reference': 'Case Reference',
         'request_date': 'Request Date',
-        'analyst_signoff_date': 'Awaiting Level 1 QC',
-        'analyst_days': 'Days to Level 1 QC',
-        'qc_reviewer_signoff_date': 'Awaiting Level 2 QC Date',
-        'qc_reviewer_days': 'Days to Awaiting Level 2 QC',
-        'fws_reviewer_signoff_date': 'Awaiting Final Letter Date',
-        'fws_reviewer_days': 'Days to Awaiting Final Letter',
+        'analyst_signoff_date': 'Awaiting QC',
+        'analyst_days': 'Days to QC',
+        'qc_reviewer_signoff_date': 'Awaiting Final Letter Date',
+        'qc_reviewer_days': 'Days to Awaiting Final Letter',
         'final_letter_date': 'Final Letter Date',
         'final_letter_days': 'Days to Final Letter',
         'close_date': 'Close Date',
@@ -65,12 +63,11 @@ class ReportDaysToEachStatusCSVRenderer (PaginatedCSVRenderer):
 
 
 class ReportCaseCountCSVRenderer (CSVRenderer):
-    header = ['count_received', 'count_awaiting_level_1_qc', 'count_awaiting_level_2_qc',
-              'count_awaiting_final_letter', 'count_closed', 'count_closed_no_final_letter']
+    header = ['count_received', 'count_awaiting_qc', 'count_awaiting_final_letter',
+              'count_closed', 'count_closed_no_final_letter']
     labels = {
         'count_received': 'Count Received',
-        'count_awaiting_level_1_qc': 'Count Awaiting Level 1 QC',
-        'count_awaiting_level_2_qc': 'Count Awaiting Level 2 QC',
+        'count_awaiting_qc': 'Count Awaiting QC',
         'count_awaiting_final_letter': 'Count Awaiting Final Letter',
         'count_closed': 'Count Closed',
         'count_closed_no_final_letter': 'Count Closed with No Final Letter'

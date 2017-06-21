@@ -131,24 +131,17 @@ class CaseViewSet(HistoryViewSet):
                 queryset = queryset.filter(close_date__isnull=False,
                                            final_letter_date__isnull=False)
             elif status == 'Awaiting Final Letter':
-                queryset = queryset.filter(fws_reviewer_signoff_date__isnull=False,
-                                           close_date__isnull=True,
-                                           final_letter_date__isnull=True)
-            elif status == 'Awaiting Level 2 QC':
                 queryset = queryset.filter(qc_reviewer_signoff_date__isnull=False,
-                                           fws_reviewer_signoff_date__isnull=True,
                                            close_date__isnull=True,
                                            final_letter_date__isnull=True)
-            elif status == 'Awaiting Level 1 QC':
+            elif status == 'Awaiting QC':
                 queryset = queryset.filter(analyst_signoff_date__isnull=False,
                                            qc_reviewer_signoff_date__isnull=True,
-                                           fws_reviewer_signoff_date__isnull=True,
                                            close_date__isnull=True,
                                            final_letter_date__isnull=True)
             elif status == 'Received':
                 queryset = queryset.filter(analyst_signoff_date__isnull=True,
                                            qc_reviewer_signoff_date__isnull=True,
-                                           fws_reviewer_signoff_date__isnull=True,
                                            close_date__isnull=True,
                                            final_letter_date__isnull=True)
             elif status == 'Open':
