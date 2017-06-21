@@ -65,7 +65,6 @@ class CaseSerializer(serializers.ModelSerializer):
         hqdate = self.initial_data.get('fws_hq_received_date', None)
         andate = self.initial_data.get('analyst_signoff_date', None)
         qcdate = self.initial_data.get('qc_reviewer_signoff_date', None)
-        fwsdate = self.initial_data.get('fws_reviewer_signoff_date', None)
         fldate = self.initial_data.get('final_letter_date', None)
         cdate = self.initial_data.get('close_date', None)
         if an is not None and qc is not None and an == qc:
@@ -82,10 +81,8 @@ class CaseSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("fws_hq_received_date cannot be later than analyst_signoff_date.")
         if andate is not None and qcdate is not None and andate > qcdate:
             raise serializers.ValidationError("analyst_signoff_date cannot be later than qc_reviewer_signoff_date.")
-        if qcdate is not None and fwsdate is not None and qcdate > fwsdate:
-            raise serializers.ValidationError("qc_reviewer_signoff_date cannot be later than fws_reviewer_signoff_date.")
-        if fwsdate is not None and fldate is not None and fwsdate > fldate:
-            raise serializers.ValidationError("fws_reviewer_signoff_date cannot be later than final_letter_date.")
+        if qcdate is not None and fldate is not None and qcdate > fldate:
+            raise serializers.ValidationError("qc_reviewer_signoff_date cannot be later than final_letter_date.")
         if fldate is not None and cdate is not None and fldate > cdate:
             raise serializers.ValidationError("final_letter_date cannot be later than close_date.")
         return data
@@ -317,14 +314,12 @@ class ReportDaysToEachStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReportCase
         fields = ('id', 'case_reference', 'status', 'request_date', 'analyst_signoff_date', 'qc_reviewer_signoff_date',
-                  'fws_reviewer_signoff_date', 'final_letter_date', 'close_date', 'close_days', 'analyst_days',
-                  'qc_reviewer_days', 'fws_reviewer_days', 'final_letter_days', 'property_string',
-                  'determination_string',)
+                  'final_letter_date', 'close_date', 'close_days', 'analyst_days', 'qc_reviewer_days',
+                  'final_letter_days', 'property_string', 'determination_string',)
 
 class ReportCountOfCasesByStatusSerializer(serializers.Serializer):
     count_received = serializers.IntegerField()
-    count_awaiting_level_1_qc = serializers.IntegerField()
-    count_awaiting_level_2_qc = serializers.IntegerField()
+    count_awaiting_qc = serializers.IntegerField()
     count_awaiting_final_letter = serializers.IntegerField()
     count_closed = serializers.IntegerField()
     count_closed_no_final_letter = serializers.IntegerField()
