@@ -571,6 +571,26 @@ class ReportCaseView(generics.ListAPIView):
         if cbrs_unit is not None:
             cbrs_unit_list = cbrs_unit.split(',')
             queryset = queryset.filter(cbrs_unit__in=cbrs_unit_list).order_by('id')
+        # filter by range for date field (after only, before only, or between, depending on which URL params appear)
+        report = self.request.query_params.get('report', None)
+        if report is not None and report == 'daystoeachstatus':
+            date_field = self.request.query_params.get('date_field', None)
+            if date_field is not None:
+                from_date = self.request.query_params.get('from_date', None)
+                to_date = self.request.query_params.get('to_date', None)
+                if from_date is not None and to_date is not None:
+                    # the filter below using __range is date-inclusive
+                    # queryset = queryset.filter(report__some_date__range=(from_date, to_date))
+                    # the filter below is date-exclusive
+                    filtergt = date_field + '__gt'
+                    filterlt = date_field + '__lt'
+                    queryset = queryset.filter(**{filtergt: from_date}, **{filterlt: to_date})
+                elif from_date is not None:
+                    filtergt = date_field + '__gt'
+                    queryset = queryset.filter(**{filtergt: from_date})
+                elif to_date is not None:
+                    filterlt = date_field + '__lt'
+                    queryset = queryset.filter(**{filterlt: to_date})
         return queryset
 
 
