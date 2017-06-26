@@ -453,9 +453,22 @@ class DeterminationViewSet(HistoryViewSet):
 
 
 class SystemUnitViewSet(CacheResponseMixin, HistoryViewSet):
-    queryset = SystemUnit.objects.all()
+    # queryset = SystemUnit.objects.all()
     serializer_class = SystemUnitSerializer
     # permission_classes = (permissions.IsAuthenticated,)
+
+    # override the default queryset to allow filtering by URL arguments
+    def get_queryset(self):
+        queryset = SystemUnit.objects.all()
+        # filter by freetext, case-insensitive contain
+        freetext = self.request.query_params.get('freetext', None)
+        if freetext is not None:
+            queryset = queryset.filter(
+                Q(system_unit_number__icontains=freetext) |
+                Q(system_unit_name__icontains=freetext) |
+                Q(field_office__field_office_number__icontains=freetext) |
+                Q(field_office__field_office_name__icontains=freetext))
+        return queryset
 
 
 class SystemUnitProhibitionDateViewSet(HistoryViewSet):
@@ -470,6 +483,12 @@ class SystemUnitProhibitionDateViewSet(HistoryViewSet):
         unit_id = self.request.query_params.get('unit', None)
         if unit_id is not None:
             queryset = queryset.filter(system_unit_id__exact=unit_id)
+        # filter by freetext, case-insensitive contain
+        freetext = self.request.query_params.get('freetext', None)
+        if freetext is not None:
+            queryset = queryset.filter(
+                Q(system_unit__id__icontains=freetext) |
+                Q(prohibition_date__icontains=freetext))
         return queryset
 
 
@@ -491,6 +510,14 @@ class SystemMapViewSet(HistoryViewSet):
         unit_id = self.request.query_params.get('unit', None)
         if unit_id is not None:
             queryset = queryset.filter(system_units__exact=unit_id)
+        # filter by freetext, case-insensitive contain
+        freetext = self.request.query_params.get('freetext', None)
+        if freetext is not None:
+            queryset = queryset.filter(
+                Q(system_units__system_unit_number__icontains=freetext) |
+                Q(map_number__icontains=freetext) |
+                Q(map_title__icontains=freetext) |
+                Q(map_date__icontains=freetext))
         return queryset
 
 
