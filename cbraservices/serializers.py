@@ -254,7 +254,8 @@ class SystemMapSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SystemMap
-        fields = ('id', 'map_number', 'map_title', 'map_date',)
+        fields = ('id', 'map_number', 'map_title', 'map_date', 'system_units')
+        read_only_fields = ('system_units',)
 
 
 class FieldOfficeSerializer(serializers.ModelSerializer):
