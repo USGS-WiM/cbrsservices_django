@@ -305,6 +305,7 @@ class SystemUnit(HistoryModel):
 
     class Meta:
         db_table = "cbra_systemunit"
+        ordering = ['system_unit_number']
 
 
 class SystemUnitType(HistoryModel):
@@ -364,6 +365,7 @@ class SystemMap(HistoryModel):
     map_number = models.CharField(max_length=16)
     map_title = models.CharField(max_length=255, blank=True)
     map_date = models.DateField()
+    current = models.BooleanField(default=True)
 
     def __str__(self):
         return self.map_number
