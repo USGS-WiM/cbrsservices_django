@@ -71,6 +71,19 @@ def case_post_save(sender, **kwargs):
                              reply_to=reply_to_list, headers=headers, attachments=attachments)
         email.send(fail_silently=False)
 
+# listen for new or updated system map instances, then toggle the 'current' value on all system maps with same name
+@receiver(post_save, sender=models.SystemMap)
+def systemmap_post_save(sender, **kwargs):
+    systemmap = kwargs['instance']
+
+    if kwargs['created']:
+        if systemmap:
+            homonym_systemmaps = models.SystemMap.objects.filter(map_number__exact=systemmap.map_number)
+            for homonym_systemmap in homonym_systemmaps:
+                if homonym_systemmap.current:
+                    homonym_systemmap.current = False
+                    homonym_systemmap.save(update_fields=['current'])
+
 
 # listen for tag deletes, and only allow when the tag is not used by any cases
 @receiver(pre_delete, sender=models.Tag)
