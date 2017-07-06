@@ -245,6 +245,25 @@ class SystemUnitProhibitionDateSerializer(serializers.ModelSerializer):
 
 class SystemUnitMapSerializer(serializers.ModelSerializer):
 
+    def create(self, data):
+        # ignore any records that already exist
+        print(data)
+        print(data['system_unit'].id)
+        uid = int(data['system_unit'].id)
+        print(data['system_map'].id)
+        mid = int(data['system_map'].id)
+        systemunitmap = SystemUnitMap.objects.filter(system_unit_id__exact=uid, system_map_id__exact=mid)
+
+        print(systemunitmap)
+        if systemunitmap:
+            print("exists")
+            print(systemunitmap)
+            return None
+        elif not systemunitmap:
+            print("not exist?")
+            newsystemunitmap = SystemUnitMap.objects.create(**data)
+            return newsystemunitmap
+
     class Meta:
         model = SystemUnitMap
         fields = ('id', 'system_unit', 'system_map',)

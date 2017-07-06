@@ -42,7 +42,7 @@ def case_post_save(sender, **kwargs):
         bcc_addresses_list = other_cbra_email_addresses
         reply_to_list = [cbra_email_address, ]
         headers = None  # {'Message-ID': 'foo'}
-        #send_mail(subject, message, from_address, to_addresses_list, fail_silently=False)
+        # send_mail(subject, message, from_address, to_addresses_list, fail_silently=False)
         email = EmailMessage(subject, body, from_address, to_addresses_list, bcc_addresses_list,
                              reply_to=reply_to_list, headers=headers)
         email.send(fail_silently=False)
@@ -66,10 +66,11 @@ def case_post_save(sender, **kwargs):
                 if casefile.final_letter:
                     attachments.append(casefile)
                     break
-        #send_mail(subject, message, from_address, to_addresses_list, fail_silently=False)
+        # send_mail(subject, message, from_address, to_addresses_list, fail_silently=False)
         email = EmailMessage(subject, body, from_address, to_addresses_list, bcc_addresses_list,
                              reply_to=reply_to_list, headers=headers, attachments=attachments)
         email.send(fail_silently=False)
+
 
 # listen for new or updated system map instances, then toggle the 'current' value on all system maps with same name
 @receiver(post_save, sender=models.SystemMap)
@@ -89,20 +90,35 @@ def systemmap_post_save(sender, **kwargs):
 @receiver(pre_delete, sender=models.Tag)
 def tag_pre_delete(sender, **kwargs):
     tag = kwargs['instance']
-    casetags = models.CaseTag.objects.all().filter(tag__exact=tag.id)
+    casetags = models.CaseTag.objects.filter(tag__exact=tag.id)
     if len(casetags) > 0:
-        #raise ValidationError("This tag cannot be removed because it is assigned to one or more determination cases.")
-        models.CaseTag.objects.all().filter(tag__exact=tag.id).delete()
+        # raise ValidationError("This tag cannot be removed because it is assigned to one or more determination cases.")
+        models.CaseTag.objects.filter(tag__exact=tag.id).delete()
 
 
 # listen for casefile deletes, and delete the actual file from the physical storage
 @receiver(post_delete, sender=models.CaseFile)
 def casefile_post_delete(sender, **kwargs):
     casefile = kwargs['instance']
-    print(casefile)
 
     if casefile.file:
-        print(casefile.file)
         if os.path.isfile(casefile.file.path):
-            print(casefile.file.path)
             os.remove(casefile.file.path)
+
+
+# listen for system unit deletes, and delete all many-to-many relations
+@receiver(pre_delete, sender=models.SystemUnit)
+def systemunit_pre_delete(sender, **kwargs):
+    systemunit = kwargs['instance']
+    systemunitmaps = models.SystemUnitMap.objects.filter(system_unit__exact=systemunit.id)
+    if len(systemunitmaps) > 0:
+        models.SystemUnitMap.objects.filter(system_unit__exact=systemunit.id).delete()
+
+
+# listen for system map deletes, and delete all many-to-many relations
+@receiver(pre_delete, sender=models.SystemMap)
+def systemmap_pre_delete(sender, **kwargs):
+    systemmap = kwargs['instance']
+    systemunitmaps = models.SystemUnitMap.objects.filter(system_map__exact=systemmap.id)
+    if len(systemunitmaps) > 0:
+        models.SystemUnitMap.objects.filter(system_map__exact=systemmap.id).delete()
