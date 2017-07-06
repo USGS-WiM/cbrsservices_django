@@ -94,12 +94,12 @@ class Case(HistoryModel):
     duplicate = models.ForeignKey('self', null=True, blank=True)
     status = property(_get_status)
     request_date = models.DateField(default=date.today, null=True, blank=True)
-    requester = models.ForeignKey('Requester', related_name='cases')
-    property = models.ForeignKey('Property', related_name='cases')
-    cbrs_unit = models.ForeignKey('SystemUnit', null=True, blank=True)
-    map_number = models.ForeignKey('SystemMap', null=True, blank=True)
+    requester = models.ForeignKey('Requester', related_name='cases', on_delete=models.PROTECT)
+    property = models.ForeignKey('Property', related_name='cases', on_delete=models.PROTECT)
+    cbrs_unit = models.ForeignKey('SystemUnit', null=True, blank=True, on_delete=models.PROTECT)
+    map_number = models.ForeignKey('SystemMap', null=True, blank=True, on_delete=models.PROTECT)
     cbrs_map_date = models.DateField(null=True, blank=True)
-    determination = models.ForeignKey('Determination', null=True, blank=True)
+    determination = models.ForeignKey('Determination', null=True, blank=True, on_delete=models.PROTECT)
     prohibition_date = models.DateField(null=True, blank=True)
     distance = models.FloatField(null=True, blank=True)
     fws_fo_received_date = models.DateField(null=True, blank=True)
@@ -107,11 +107,14 @@ class Case(HistoryModel):
     final_letter_date = models.DateField(null=True, blank=True)
     close_date = models.DateField(null=True, blank=True)
     final_letter_recipient = models.CharField(max_length=255, blank=True)
-    analyst = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='analyst', null=True, blank=True)
+    analyst = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                related_name='analyst', null=True, blank=True, on_delete=models.PROTECT)
     analyst_signoff_date = models.DateField(null=True, blank=True)
-    qc_reviewer = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='qc_reviewer', null=True, blank=True)
+    qc_reviewer = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                    related_name='qc_reviewer', null=True, blank=True, on_delete=models.PROTECT)
     qc_reviewer_signoff_date = models.DateField(null=True, blank=True)
-    fws_reviewer = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='fws_reviewer', null=True, blank=True)
+    fws_reviewer = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                     related_name='fws_reviewer', null=True, blank=True, on_delete=models.PROTECT)
     fws_reviewer_signoff_date = models.DateField(null=True, blank=True)
     priority = models.BooleanField(default=False)
     on_hold = models.BooleanField(default=False)
@@ -254,7 +257,7 @@ class Comment(HistoryModel):
     """
 
     comment = models.TextField()
-    acase = models.ForeignKey('Case', related_name='comments')
+    acase = models.ForeignKey('Case', related_name='comments', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.comment
@@ -296,8 +299,9 @@ class SystemUnit(HistoryModel):
 
     system_unit_number = models.CharField(max_length=16, unique=True)
     system_unit_name = models.CharField(max_length=255, blank=True)
-    system_unit_type = models.ForeignKey('SystemUnitType')
-    field_office = models.ForeignKey('FieldOffice', related_name='system_units', null=True, blank=True)
+    system_unit_type = models.ForeignKey('SystemUnitType', on_delete=models.PROTECT)
+    field_office = models.ForeignKey('FieldOffice',
+                                     related_name='system_units', null=True, blank=True, on_delete=models.PROTECT)
     system_maps = models.ManyToManyField('SystemMap', through='SystemUnitMap', related_name='system_units')
 
     def __str__(self):
@@ -329,7 +333,7 @@ class SystemUnitProhibitionDate(HistoryModel):
     """
 
     prohibition_date = models.DateField()
-    system_unit = models.ForeignKey('SystemUnit', related_name='prohibition_dates')
+    system_unit = models.ForeignKey('SystemUnit', related_name='prohibition_dates', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.prohibition_date
