@@ -479,7 +479,7 @@ class SystemUnitProhibitionDateViewSet(HistoryViewSet):
     # override the default queryset to allow filtering by URL arguments
     def get_queryset(self):
         queryset = SystemUnitProhibitionDate.objects.all()
-        # filter by case ID, exact
+        # filter by unit ID, exact
         unit_id = self.request.query_params.get('unit', None)
         if unit_id is not None:
             queryset = queryset.filter(system_unit_id__exact=unit_id)
@@ -493,9 +493,22 @@ class SystemUnitProhibitionDateViewSet(HistoryViewSet):
 
 
 class SystemUnitMapViewSet(HistoryViewSet):
-    queryset = SystemUnitMap.objects.all()
+    # queryset = SystemUnitMap.objects.all()
     serializer_class = SystemUnitMapSerializer
     # permission_classes = (permissions.IsAuthenticated,)
+
+    # override the default queryset to allow filtering by URL arguments
+    def get_queryset(self):
+        queryset = SystemUnitMap.objects.all()
+        # filter by unit ID, exact
+        unit_id = self.request.query_params.get('unit', None)
+        if unit_id is not None:
+            queryset = queryset.filter(system_unit__exact=unit_id)
+        # filter by map ID, exact
+        map_id = self.request.query_params.get('map', None)
+        if map_id is not None:
+            queryset = queryset.filter(system_map__exact=map_id)
+        return queryset
 
 
 class SystemMapViewSet(HistoryViewSet):
@@ -506,7 +519,7 @@ class SystemMapViewSet(HistoryViewSet):
     # override the default queryset to allow filtering by URL arguments
     def get_queryset(self):
         queryset = SystemMap.objects.all()
-        # filter by case ID, exact
+        # filter by unit ID, exact
         unit_id = self.request.query_params.get('unit', None)
         if unit_id is not None:
             queryset = queryset.filter(system_units__exact=unit_id)
