@@ -624,7 +624,8 @@ class ReportCaseView(generics.ListAPIView):
                     # the filter below is date-exclusive
                     filtergt = date_field + '__gt'
                     filterlt = date_field + '__lt'
-                    queryset = queryset.filter(**{filtergt: from_date}, **{filterlt: to_date})
+                    kw_args = {filtergt: from_date, filterlt: to_date}
+                    queryset = queryset.filter(**kw_args)
                 elif from_date is not None:
                     filtergt = date_field + '__gt'
                     queryset = queryset.filter(**{filtergt: from_date})
