@@ -369,7 +369,7 @@ class SystemMap(HistoryModel):
     map_number = models.CharField(max_length=16)
     map_title = models.CharField(max_length=255, blank=True)
     map_date = models.DateField()
-    current = models.BooleanField(default=True)
+    effective = models.BooleanField(default=True)
 
     def __str__(self):
         return self.map_number

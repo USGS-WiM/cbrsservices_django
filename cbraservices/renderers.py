@@ -142,9 +142,11 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         referal = "In Reply Refer To\nFWS/DBTS-BGMTS"
 
         requester_full_address = "\n" + requester_salutation + " " + requester_first_name + " " + requester_last_name + "\n"
+        requester_full_address += requester_street
         if requester_unit != "":
-            requester_full_address += requester_unit + " "
-        requester_full_address += requester_street + "\n"
+            requester_full_address += ", " + requester_unit + "\n"
+        else:
+            requester_full_address += "\n"
         requester_full_address += requester_city + ", " + requester_state + " " + requester_zipcode + "\n\n"
 
         salutation = "Dear " + requester_salutation + " " + requester_last_name + ","

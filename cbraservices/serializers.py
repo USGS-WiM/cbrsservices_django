@@ -89,7 +89,6 @@ class CaseSerializer(serializers.ModelSerializer):
 
     analyst_string = serializers.StringRelatedField(source='analyst')
     qc_reviewer_string = serializers.StringRelatedField(source='qc_reviewer')
-    fws_reviewer_string = serializers.StringRelatedField(source='fws_reviewer')
     cbrs_unit_string = serializers.StringRelatedField(source='cbrs_unit')
     map_number_string = serializers.StringRelatedField(source='map_number')
     determination_string = serializers.StringRelatedField(source='determination')
@@ -101,7 +100,7 @@ class CaseSerializer(serializers.ModelSerializer):
                   'determination', 'determination_string', 'prohibition_date', 'distance', 'fws_fo_received_date',
                   'fws_hq_received_date', 'final_letter_date', 'close_date', 'final_letter_recipient', 'analyst',
                   'analyst_string', 'analyst_signoff_date', 'qc_reviewer', 'qc_reviewer_string',
-                  'qc_reviewer_signoff_date', 'fws_reviewer', 'fws_reviewer_string', 'fws_reviewer_signoff_date',
+                  'qc_reviewer_signoff_date',
                   'priority', 'on_hold', 'invalid', 'comments', 'tags', 'case_files', 'created_by', 'modified_by',)
         read_only_fields = ('case_number', 'status', 'comments', 'tags', 'case_files',)
 
@@ -253,7 +252,7 @@ class SystemMapSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SystemMap
-        fields = ('id', 'map_number', 'map_title', 'map_date', 'current', 'system_units')
+        fields = ('id', 'map_number', 'map_title', 'map_date', 'effective', 'system_units')
         read_only_fields = ('system_units',)
 
 

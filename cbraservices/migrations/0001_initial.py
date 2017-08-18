@@ -2,11 +2,11 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import localflavor.us.models
+import cbraservices.models
 import django.db.models.deletion
 import datetime
-import cbraservices.models
 import django.core.validators
+import localflavor.us.models
 from django.conf import settings
 
 
@@ -221,7 +221,7 @@ class Migration(migrations.Migration):
                 ('map_number', models.CharField(max_length=16)),
                 ('map_title', models.CharField(max_length=255, blank=True)),
                 ('map_date', models.DateField()),
-                ('current', models.BooleanField(default=True)),
+                ('effective', models.BooleanField(default=True)),
                 ('created_by', models.ForeignKey(blank=True, null=True, related_name='systemmap_creator', to=settings.AUTH_USER_MODEL)),
                 ('modified_by', models.ForeignKey(blank=True, null=True, related_name='systemmap_modifier', to=settings.AUTH_USER_MODEL)),
             ],

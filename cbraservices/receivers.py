@@ -61,7 +61,7 @@ def case_post_save(sender, **kwargs):
         reply_to_list = [cbra_email_address, ]
         headers = None  # {'Message-ID': 'foo'}
         attachments = []
-        if case.casefiles:
+        if hasattr(case, 'casefiles'):
             for casefile in case.casefiles:
                 if casefile.final_letter:
                     attachments.append(casefile)
@@ -72,7 +72,7 @@ def case_post_save(sender, **kwargs):
         email.send(fail_silently=False)
 
 
-# listen for new or updated system map instances, then toggle the 'current' value on all system maps with same name
+# listen for new or updated system map instances, then toggle the 'effective' value on all system maps with same name
 @receiver(post_save, sender=models.SystemMap)
 def systemmap_post_save(sender, **kwargs):
     systemmap = kwargs['instance']
@@ -81,9 +81,9 @@ def systemmap_post_save(sender, **kwargs):
         if systemmap:
             homonym_systemmaps = models.SystemMap.objects.filter(map_number__exact=systemmap.map_number)
             for homonym_systemmap in homonym_systemmaps:
-                if homonym_systemmap.current:
-                    homonym_systemmap.current = False
-                    homonym_systemmap.save(update_fields=['current'])
+                if homonym_systemmap.effective:
+                    homonym_systemmap.effective = False
+                    homonym_systemmap.save(update_fields=['effective'])
 
 
 # listen for tag deletes, and only allow when the tag is not used by any cases
