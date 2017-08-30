@@ -105,7 +105,7 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         prohibition_date = data[0]['prohibition_date'] or ""
         if prohibition_date:
             prohibition_date = datetime.strptime(data[0]['prohibition_date'], '%Y-%m-%d').strftime('%B %-d, %Y')
-        map_number = str(data[0]['map_number']) or ""
+        map_number_string = str(data[0]['map_number_string']) or ""
         cbrs_map_date = data[0]['cbrs_map_date'] or ""
         if cbrs_map_date:
             cbrs_map_date = datetime.strptime(data[0]['cbrs_map_date'], '%Y-%m-%d').strftime('%B %-d, %Y')
@@ -128,6 +128,7 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         requester_salutation = data[0]['salutation'] or ""
         requester_first_name = data[0]['first_name'] or ""
         requester_last_name = data[0]['last_name'] or ""
+        requester_organization = data[0]['requester_organization'] or ""
         requester_street = data[0]['requester_street'] or ""
         requester_unit = data[0]['requester_unit'] or ""
         requester_city = data[0]['requester_city'] or ""
@@ -142,12 +143,27 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         referal = "In Reply Refer To\nFWS/DBTS-BGMTS"
 
         requester_full_address = "\n" + requester_salutation + " " + requester_first_name + " " + requester_last_name + "\n"
+        requester_full_address += requester_organization + "\n"
         requester_full_address += requester_street
-        if requester_unit != "":
+        print(requester_unit)
+        if requester_unit:
             requester_full_address += ", " + requester_unit + "\n"
         else:
             requester_full_address += "\n"
-        requester_full_address += requester_city + ", " + requester_state + " " + requester_zipcode + "\n\n"
+        if requester_city and requester_state and requester_zipcode:
+            requester_full_address += requester_city + ", " + requester_state + " " + requester_zipcode + "\n\n"
+        elif not requester_city and requester_state and requester_zipcode:
+            requester_full_address += requester_state + " " + requester_zipcode + "\n\n"
+        elif not requester_city and not requester_state and requester_zipcode:
+            requester_full_address += requester_zipcode + "\n\n"
+        elif requester_city and not requester_state and requester_zipcode:
+            requester_full_address += requester_city + ", " + requester_zipcode + "\n\n"
+        elif requester_city and requester_state and not requester_zipcode:
+            requester_full_address += requester_city + ", " + requester_state + "\n\n"
+        elif requester_city and not requester_state and not requester_zipcode:
+            requester_full_address += requester_city + "\n\n"
+        elif not requester_city and requester_state and not requester_zipcode:
+            requester_full_address += requester_state + "\n\n"
 
         salutation = "Dear " + requester_salutation + " " + requester_last_name + ","
 
@@ -161,7 +177,8 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         property_address = "Address:\t\t\t"
         if property_unit != "":
             property_address += property_unit + " "
-        property_address += property_street + "\n\t\t\t\t" + property_city + ", " + property_state + " " + property_zipcode
+        property_address += property_street + "\n\t\t\t\t"
+        property_address += property_city + ", " + property_state + " " + property_zipcode
 
         legal_description = "Legal Description:\t\t"
         if property_legal_description != "":
@@ -172,7 +189,8 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
             legal_description += "(none submitted)"
 
         details = "We compared the location of the property above, as depicted on the information that was provided,"
-        details += " to the official CBRS map for the area, numbered " + map_number + ", dated " + cbrs_map_date + ". "
+        details += " to the official CBRS map for the area, numbered " + map_number_string
+        details += ", dated " + cbrs_map_date + ". "
 
         # 1:In, 2:Out, 3:Partially In; Structure In, 4:Partially In; Structure Out, 5:Partially In/No Structure
         if determination == 1:
