@@ -121,6 +121,7 @@ class LetterSerializer(serializers.ModelSerializer):
     cbrs_unit_string = serializers.StringRelatedField(source='cbrs_unit')
     system_unit_type = serializers.StringRelatedField(source='cbrs_unit.system_unit_type')
     determination_string = serializers.StringRelatedField(source='determination')
+    map_number_string = serializers.StringRelatedField(source='map_number')
     policy_number = serializers.CharField(source='property.policy_number')
     property_street = serializers.CharField(source='property.street')
     property_unit = serializers.CharField(source='property.unit')
@@ -132,6 +133,7 @@ class LetterSerializer(serializers.ModelSerializer):
     salutation = serializers.CharField(source='requester.salutation')
     first_name = serializers.CharField(source='requester.first_name')
     last_name = serializers.CharField(source='requester.last_name')
+    requester_organization = serializers.CharField(source='requester.organization')
     requester_street = serializers.CharField(source='requester.street')
     requester_unit = serializers.CharField(source='requester.unit')
     requester_city = serializers.CharField(source='requester.city')
@@ -141,11 +143,11 @@ class LetterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Case
         fields = ('id', 'case_reference', 'request_date', 'determination', 'determination_string', 'cbrs_unit',
-                  'cbrs_unit_string', 'system_unit_type', 'prohibition_date', 'map_number', 'cbrs_map_date',
-                  'final_letter_recipient', 'policy_number', 'property_street', 'property_unit', 'property_city',
-                  'property_state', 'property_zipcode', 'legal_description', 'subdivision', 'salutation', 'first_name',
-                  'last_name', 'requester_street', 'requester_unit', 'requester_city', 'requester_state',
-                  'requester_zipcode', )
+                  'cbrs_unit_string', 'system_unit_type', 'prohibition_date', 'map_number', 'map_number_string',
+                  'cbrs_map_date', 'final_letter_recipient', 'policy_number', 'property_street', 'property_unit',
+                  'property_city', 'property_state', 'property_zipcode', 'legal_description', 'subdivision',
+                  'salutation', 'first_name', 'last_name', 'requester_organization', 'requester_street',
+                  'requester_unit', 'requester_city', 'requester_state', 'requester_zipcode', )
 
 
 class CaseIDSerializer(serializers.ModelSerializer):

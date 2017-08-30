@@ -25,14 +25,13 @@ def _get_hash(id):
 def case_post_save(sender, **kwargs):
     case = kwargs['instance']
     cbra_email_address = "cbra@fws.gov"
-    other_cbra_email_addresses = ["astephenson@usgs.gov", ]
+    other_cbra_email_addresses = ["", ]
 
     if kwargs['created']:
         # create and assign the case ID hash
         case.case_reference = _get_hash(case.id)
         case.save()
 
-        # TODO: finalize the email settings (message text, addresses, etc)
         # construct and send the confirmation email
         subject = "Coastal Barrier Resources Act Determination Request Received"
         body = "Dear Requester,\r\n\r\nThe U.S. Fish and Wildlife Services has received your request."
@@ -49,7 +48,6 @@ def case_post_save(sender, **kwargs):
 
     elif case.final_letter_date is not None:
 
-        # TODO: finalize the email settings (message text, addresses, etc)
         # construct and send the final email with the final letter as attachment
         subject = "Coastal Barrier Resources Act Determination Case " + case.case_reference
         body = "Dear Requester,\r\n\r\nAttached is the Coastal Barrier Resources Act determination that you requested"
