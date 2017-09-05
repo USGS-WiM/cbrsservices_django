@@ -693,10 +693,11 @@ class UserViewSet(HistoryViewSet):
         # filter by current and former active users
         used_users = self.request.query_params.get('used_users', None)
         if used_users is not None:
+            active_users = queryset.filter(is_active__exact=True)
             analysts = queryset.filter(analyst__isnull=False).distinct()
             qc_reviewers = queryset.filter(qc_reviewer__isnull=False).distinct()
             fws_reviewers = queryset.filter(fws_reviewer__isnull=False).distinct()
-            used_users_chain = list(chain(analysts, qc_reviewers, fws_reviewers))
+            used_users_chain = list(chain(active_users, analysts, qc_reviewers, fws_reviewers))
             used_users_set = set(used_users_chain)
             used_users_ids = []
             for used_user in used_users_set:
