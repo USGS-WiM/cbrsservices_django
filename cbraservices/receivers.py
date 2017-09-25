@@ -24,7 +24,7 @@ def _get_hash(id):
 @receiver(post_save, sender=models.Case)
 def case_post_save(sender, **kwargs):
     case = kwargs['instance']
-    cbra_email_address = "cbra@fws.gov"
+    cbra_email_address = "CBRAdeterminations@fws.gov"
     other_cbra_email_addresses = ["", ]
 
     if kwargs['created']:
