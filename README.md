@@ -1,2 +1,2 @@
-CBRA
+CBRS Services Django
 ====
