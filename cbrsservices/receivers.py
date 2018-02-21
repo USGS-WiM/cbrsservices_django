@@ -24,6 +24,7 @@ def _get_hash(id):
 @receiver(post_save, sender=models.Case)
 def case_post_save(sender, **kwargs):
     case = kwargs['instance']
+    local_email_address = "cbrs@wim.usgs.gov"
     cbrs_email_address = "CBRAdeterminations@fws.gov"
     other_cbrs_email_addresses = ["", ]
 
@@ -36,7 +37,7 @@ def case_post_save(sender, **kwargs):
         subject = "Coastal Barrier Resources Act Determination Request Received"
         body = "Dear Requester,\r\n\r\nThe U.S. Fish and Wildlife Services has received your request."
         body += "\r\nThe Reference Number is: " + case.case_reference
-        from_address = cbrs_email_address
+        from_address = local_email_address
         to_addresses_list = [case.requester.email, ]
         bcc_addresses_list = other_cbrs_email_addresses
         reply_to_list = [cbrs_email_address, ]
