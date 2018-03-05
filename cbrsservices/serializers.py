@@ -299,6 +299,7 @@ class ReportCasesByUnitSerializer(serializers.ModelSerializer):
         fields = ('id', 'status', 'prohibition_date', 'cbrs_unit_string', 'request_date', 'property_string',
                   'determination_string', 'street_address')
 
+
 class ReportDaysToResolutionSerializer(serializers.ModelSerializer):
     property_string = serializers.StringRelatedField(source='property')
     determination_string = serializers.StringRelatedField(source='determination')
@@ -307,6 +308,7 @@ class ReportDaysToResolutionSerializer(serializers.ModelSerializer):
         model = ReportCase
         fields = ('id', 'case_reference', 'request_date', 'final_letter_date', 'close_date', 'close_days',
                   'property_string', 'determination_string',)
+
 
 class ReportDaysToEachStatusSerializer(serializers.ModelSerializer):
     property_string = serializers.StringRelatedField(source='property')
@@ -317,6 +319,7 @@ class ReportDaysToEachStatusSerializer(serializers.ModelSerializer):
         fields = ('id', 'case_reference', 'status', 'request_date', 'analyst_signoff_date', 'qc_reviewer_signoff_date',
                   'final_letter_date', 'close_date', 'close_days', 'analyst_days', 'qc_reviewer_days',
                   'final_letter_days', 'property_string', 'determination_string',)
+
 
 class ReportCountOfCasesByStatusSerializer(serializers.Serializer):
     count_received = serializers.IntegerField()
