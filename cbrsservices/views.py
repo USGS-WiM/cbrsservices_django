@@ -206,6 +206,11 @@ class CaseViewSet(HistoryViewSet):
         city = self.request.query_params.get('city', None)
         if city is not None:
             queryset = queryset.filter(property__city__icontains=city)
+        # policy_number, exact list
+        policy_number = self.request.query_params.get('policy_number', None)
+        if policy_number is not None:
+            policy_number_list = policy_number.split(',')
+            queryset = queryset.filter(property__policy_number__in=policy_number_list)
         # filter by tag IDs, exact list
         tags = self.request.query_params.get('tags', None)
         if tags is not None:
@@ -251,7 +256,8 @@ class CaseViewSet(HistoryViewSet):
                 Q(cbrs_unit__system_unit_name__icontains=freetext) |
                 Q(property__street__icontains=freetext) |
                 Q(property__unit__icontains=freetext) |
-                Q(property__city__icontains=freetext))
+                Q(property__city__icontains=freetext) |
+                Q(property__policy_number__icontains=freetext))
         return queryset
 
 
