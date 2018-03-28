@@ -23,7 +23,7 @@ PROJECT_PATH = os.path.join(SETTINGS_DIR, os.pardir)
 PROJECT_PATH = os.path.abspath(PROJECT_PATH)
 TEMPLATE_PATH = os.path.join(PROJECT_PATH, 'templates')
 
-CONFIG = moves.configparser.SafeConfigParser(allow_no_value=True)
+CONFIG = moves.configparser.RawConfigParser(allow_no_value=True)
 CONFIG.read('%s\settings.cfg' % SETTINGS_DIR)
 
 
@@ -120,10 +120,15 @@ ROOT_URLCONF = 'cbrsservices_django.urls'
 
 WSGI_APPLICATION = 'cbrsservices_django.wsgi.application'
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = '127.0.0.1'
-EMAIL_PORT = '25'
-DEFAULT_FROM_EMAIL = 'cbra@fws.gov'
+EMAIL_BACKEND = CONFIG.get('email', 'EMAIL_BACKEND')
+EMAIL_HOST = CONFIG.get('email', 'EMAIL_HOST')
+EMAIL_HOST_PASSWORD = CONFIG.get('email', 'EMAIL_HOST_PASSWORD')
+EMAIL_HOST_USER = CONFIG.get('email', 'EMAIL_HOST_USER')
+EMAIL_PORT = CONFIG.get('email', 'EMAIL_PORT')
+EMAIL_USE_TLS = CONFIG.get('email', 'EMAIL_USE_TLS')
+DEFAULT_FROM_EMAIL = CONFIG.get('email', 'DEFAULT_FROM_EMAIL')
+# EMAIL_HOST = '127.0.0.1'
+# EMAIL_PORT = '25'
 
 TEMPLATES = [
     {
