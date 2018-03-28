@@ -24,9 +24,9 @@ def _get_hash(id):
 @receiver(post_save, sender=models.Case)
 def case_post_save(sender, **kwargs):
     case = kwargs['instance']
-    local_email_address = "cbrs@wim.usgs.gov"
+    local_email_address = "CBRAdeterminations@fws.gov"
     cbrs_email_address = "CBRAdeterminations@fws.gov"
-    other_cbrs_email_addresses = ["", ]
+    other_cbrs_email_addresses = ["CBRA@fws.gov", ]
 
     if kwargs['created']:
         # create and assign the case ID hash
@@ -45,7 +45,7 @@ def case_post_save(sender, **kwargs):
         # send_mail(subject, message, from_address, to_addresses_list, fail_silently=False)
         email = EmailMessage(subject, body, from_address, to_addresses_list, bcc_addresses_list,
                              reply_to=reply_to_list, headers=headers)
-        email.send(fail_silently=False)
+        #email.send(fail_silently=False)
 
     elif case.final_letter_date is not None:
 
@@ -68,7 +68,7 @@ def case_post_save(sender, **kwargs):
         # send_mail(subject, message, from_address, to_addresses_list, fail_silently=False)
         email = EmailMessage(subject, body, from_address, to_addresses_list, bcc_addresses_list,
                              reply_to=reply_to_list, headers=headers, attachments=attachments)
-        email.send(fail_silently=False)
+        #email.send(fail_silently=False)
 
 
 # listen for new or updated system map instances, then toggle the 'effective' value on all system maps with same name

@@ -338,7 +338,32 @@ class ReportCountOfCasesByStatusSerializer(serializers.Serializer):
 
 class UserSerializer(serializers.ModelSerializer):
 
+    def validate(self, data):
+        if 'password' in data and data['password'] is not None:
+            if len(data['password']) < 12:
+                raise serializers.ValidationError('password must be 12 or more characters long')
+        return data
+
+    def create(self, validated_data):
+        password = validated_data.pop('password', None)
+        instance = self.Meta.model(**validated_data)
+        if password is not None:
+            instance.set_password(password)
+        instance.save()
+        return instance
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            if attr == 'password':
+                instance.set_password(value)
+            else:
+                setattr(instance, attr, value)
+        instance.save()
+        return instance
+
+    password = serializers.CharField(write_only=True)
+
     class Meta:
         model = User
-        fields = ('id', 'username', 'first_name', 'last_name', 'email',
+        fields = ('id', 'username', 'first_name', 'last_name', 'email', 'password',
                   'groups', 'user_permissions', 'is_superuser', 'is_staff', 'is_active',)
