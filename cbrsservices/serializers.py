@@ -341,10 +341,13 @@ class UserSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if 'password' in data and data['password'] is not None:
             if len(data['password']) < 12:
-                raise serializers.ValidationError('password must be 12 or more characters long')
+                raise serializers.ValidationError("password must be 12 or more characters long")
         return data
 
     def create(self, validated_data):
+        user = self.context['request'].user
+        if not user.is_staff:
+            raise serializers.ValidationError("you are not authorized to create users")
         password = validated_data.pop('password', None)
         instance = self.Meta.model(**validated_data)
         if password is not None:
@@ -353,6 +356,10 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
 
     def update(self, instance, validated_data):
+        user = self.context['request'].user
+        if not user.is_staff:
+            if not user.id == instance.id:
+                raise serializers.ValidationError("you are not authorized to make changes to this user")
         for attr, value in validated_data.items():
             if attr == 'password':
                 instance.set_password(value)
