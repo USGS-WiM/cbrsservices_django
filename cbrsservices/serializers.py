@@ -1,5 +1,6 @@
 import platform
 import magic
+from zipfile import ZipFile, BadZipFile
 from django.template.defaultfilters import filesizeformat
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
@@ -31,7 +32,9 @@ class CaseFileSerializer(serializers.ModelSerializer):
                 filemagic = magic.Magic(magic_file=magic_file, mime=True)
             else:
                 filemagic = magic.Magic(mime=True)
-            filetype = filemagic.from_buffer(file.read())
+            file.seek(0)
+            filetype = filemagic.from_buffer(file.read(2000))
+            # check if the filetype is in the approved list
             if filetype in settings.CONTENT_TYPES:
                 # check the file size
                 if int(file.size) > int(settings.MAX_UPLOAD_SIZE):
@@ -40,7 +43,34 @@ class CaseFileSerializer(serializers.ModelSerializer):
                 else:
                     return data
             else:
-                raise serializers.ValidationError(_('File type is not supported'))
+                # check if the filetype is actually docx, which can be misidentified by python-magic as an octet-stream
+                # otherwise reject the file
+                if filetype != 'application/octet-stream':
+                    raise serializers.ValidationError(_('File type is not supported'))
+                else:
+                    # docx is actually a zip of many files, so first unzip it
+                    try:
+                        document = ZipFile(file)
+                        # read MIME type information for parts of the package, listed in the [Content_Types].xml file
+                        if '[Content_Types].xml' in document:
+                            content_types_xml = document.read('[Content_Types].xml')
+                            document.close()
+                            # check if docx is included as a MIME type
+                            if bytearray(settings.CONTENT_TYPE_DOCX, encoding="utf-8") in content_types_xml:
+                                # check the file size
+                                if int(file.size) > int(settings.MAX_UPLOAD_SIZE):
+                                    raise serializers.ValidationError(
+                                        _('Please keep filesize under %s. Current filesize %s') % (
+                                            filesizeformat(settings.MAX_UPLOAD_SIZE), filesizeformat(file.size)))
+                                else:
+                                    return data
+                            else:
+                                raise serializers.ValidationError(_('File type is not supported'))
+                        else:
+                            document.close()
+                            raise serializers.ValidationError(_('File type is not supported'))
+                    except BadZipFile:
+                        raise serializers.ValidationError(_('File type is not supported'))
         return data
 
     class Meta:
@@ -101,8 +131,8 @@ class CaseSerializer(serializers.ModelSerializer):
                   'fws_hq_received_date', 'final_letter_date', 'close_date', 'final_letter_recipient', 'analyst',
                   'analyst_string', 'analyst_signoff_date', 'qc_reviewer', 'qc_reviewer_string',
                   'qc_reviewer_signoff_date',
-                  'priority', 'on_hold', 'invalid', 'comments', 'tags', 'case_files', 'created_by', 'modified_by',)
-        read_only_fields = ('case_number', 'status', 'comments', 'tags', 'case_files',)
+                  'priority', 'on_hold', 'invalid', 'comments', 'tags', 'casefiles', 'created_by', 'modified_by',)
+        read_only_fields = ('case_number', 'status', 'comments', 'tags', 'casefiles',)
 
 
 class WorkbenchSerializer(serializers.ModelSerializer):

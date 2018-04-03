@@ -5,6 +5,7 @@ from docx.shared import Pt
 from docx.shared import Inches
 from io import BytesIO
 from localflavor.us import us_states
+from django.conf import settings
 from rest_framework_csv.renderers import CSVRenderer
 
 
@@ -86,7 +87,7 @@ class DOCXRenderer(renderers.BaseRenderer):
 
 class FinalLetterDOCXRenderer(DOCXRenderer):
 
-    def render(self, data, media_type=None, renderer_context=None):
+    def render(self, data, media_type=settings.CONTENT_TYPE_DOCX, renderer_context=None):
         DOC_FONT_TYPE = 'Times New Roman'
         DOC_FONT_SMALL = Pt(8)
         DOC_FONT_LARGE = Pt(12)
@@ -96,19 +97,19 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         id = str(data[0]['id'])
         case_reference = data[0]['case_reference'] or ""
         request_date = data[0]['request_date'] or ""
-        if request_date:
-            request_date = datetime.strptime(data[0]['request_date'], '%Y-%m-%d').strftime('%B %-d, %Y')
+        # if request_date:
+            # request_date = datetime.strptime(data[0]['request_date'], '%Y-%m-%d').strftime('%B %-d, %Y')
         determination = data[0]['determination'] or ""
         determination_string = data[0]['determination_string'] or ""
         cbrs_unit = data[0]['cbrs_unit_string'] or ""
         system_unit_type = data[0]['system_unit_type'] or ""
         prohibition_date = data[0]['prohibition_date'] or ""
-        if prohibition_date:
-            prohibition_date = datetime.strptime(data[0]['prohibition_date'], '%Y-%m-%d').strftime('%B %-d, %Y')
+        # if prohibition_date:
+            # prohibition_date = datetime.strptime(data[0]['prohibition_date'], '%Y-%m-%d').strftime('%B %-d, %Y')
         map_number_string = str(data[0]['map_number_string']) or ""
         cbrs_map_date = data[0]['cbrs_map_date'] or ""
-        if cbrs_map_date:
-            cbrs_map_date = datetime.strptime(data[0]['cbrs_map_date'], '%Y-%m-%d').strftime('%B %-d, %Y')
+        # if cbrs_map_date:
+            # cbrs_map_date = datetime.strptime(data[0]['cbrs_map_date'], '%Y-%m-%d').strftime('%B %-d, %Y')
         final_letter_recipient = data[0]['final_letter_recipient'] or ""
 
         # property fields

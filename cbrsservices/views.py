@@ -5,6 +5,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.db.models import Q, Count
 from django.db.models.expressions import RawSQL
 from rest_framework import views, viewsets, generics, permissions, authentication, status
+from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from rest_framework.parsers import FormParser, MultiPartParser
@@ -68,6 +69,12 @@ class CaseViewSet(HistoryViewSet):
     # queryset = Case.objects.all()
     # serializer_class = CaseSerializer
     # permission_classes = (permissions.IsAuthenticated,)
+
+    @detail_route(methods=['post'])
+    def send_final_email(self, request, pk=None):
+        case = self.get_object()
+        case.send_final_email()
+        return Response({'status': 'final email sent'})
 
     # override the default renderers to use a custom DOCX renderer when requested
     def get_renderers(self):
