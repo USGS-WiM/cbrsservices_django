@@ -47,28 +47,28 @@ def case_post_save(sender, **kwargs):
                              reply_to=reply_to_list, headers=headers)
         #email.send(fail_silently=False)
 
-    elif case.final_letter_date is not None:
-
-        # construct and send the final email with the final letter as attachment
-        subject = "Coastal Barrier Resources Act Determination Case " + case.case_reference
-        body = "Dear Requester,\r\n\r\nAttached is the Coastal Barrier Resources Act determination that you requested"
-        body += " from the U.S. Fish and Wildlife Service. If you have any questions about this determination,"
-        body += " please contact Teresa Fish, Program Specialist, at (703) 358-2171 or e-mail us at cbra@fws.gov."
-        from_address = cbrs_email_address
-        to_addresses_list = [case.requester.email, ]
-        bcc_addresses_list = other_cbrs_email_addresses
-        reply_to_list = [cbrs_email_address, ]
-        headers = None  # {'Message-ID': 'foo'}
-        attachments = []
-        if hasattr(case, 'casefiles'):
-            for casefile in case.casefiles:
-                if casefile.final_letter:
-                    attachments.append(casefile)
-                    break
-        # send_mail(subject, message, from_address, to_addresses_list, fail_silently=False)
-        email = EmailMessage(subject, body, from_address, to_addresses_list, bcc_addresses_list,
-                             reply_to=reply_to_list, headers=headers, attachments=attachments)
-        #email.send(fail_silently=False)
+    # elif case.final_letter_date is not None:
+    #
+    #     # construct and send the final email with the final letter as attachment
+    #     subject = "Coastal Barrier Resources Act Determination Case " + case.case_reference
+    #     body = "Dear Requester,\r\n\r\nAttached is the Coastal Barrier Resources Act determination that you requested"
+    #     body += " from the U.S. Fish and Wildlife Service. If you have any questions about this determination,"
+    #     body += " please contact Teresa Fish, Program Specialist, at (703) 358-2171 or e-mail us at cbra@fws.gov."
+    #     from_address = cbrs_email_address
+    #     to_addresses_list = [case.requester.email, ]
+    #     bcc_addresses_list = other_cbrs_email_addresses
+    #     reply_to_list = [cbrs_email_address, ]
+    #     headers = None  # {'Message-ID': 'foo'}
+    #     attachments = []
+    #     if hasattr(case, 'casefiles'):
+    #         for casefile in case.casefiles:
+    #             if casefile.final_letter:
+    #                 attachments.append(casefile)
+    #                 break
+    #     # send_mail(subject, message, from_address, to_addresses_list, fail_silently=False)
+    #     email = EmailMessage(subject, body, from_address, to_addresses_list, bcc_addresses_list,
+    #                          reply_to=reply_to_list, headers=headers, attachments=attachments)
+    #     #email.send(fail_silently=False)
 
 
 # listen for new or updated system map instances, then toggle the 'effective' value on all system maps with same name
