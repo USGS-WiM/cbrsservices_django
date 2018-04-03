@@ -1,5 +1,6 @@
 from datetime import date
 from django.core import validators
+from django.core.mail import send_mail, EmailMessage
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib import admin
@@ -85,6 +86,35 @@ class Case(HistoryModel):
         else:
             return 'Received'
 
+    def send_final_email(self):
+        if self.final_letter_date is not None:
+
+            cbrs_email_address = "CBRAdeterminations@fws.gov"
+            other_cbrs_email_addresses = ["CBRA@fws.gov", ]
+
+            # construct and send the final email with the final letter as attachment
+            subject = "Coastal Barrier Resources Act Determination Case " + self.case_reference
+            body = "Dear Requester,\r\n\r\n"
+            body += "Attached is the Coastal Barrier Resources Act determination that you requested"
+            body += " from the U.S. Fish and Wildlife Service. If you have any questions about this determination,"
+            body += " please contact Teresa Fish, Program Specialist, at (703) 358-2171 or e-mail us at cbra@fws.gov."
+            from_address = cbrs_email_address
+            to_addresses_list = [self.requester.email, ]
+            bcc_addresses_list = other_cbrs_email_addresses
+            reply_to_list = [cbrs_email_address, ]
+            headers = None  # {'Message-ID': 'foo'}
+            attachments = []
+            if hasattr(self, 'casefiles'):
+                casefiles = CaseFile.objects.filter(case=self.id)
+                for casefile in casefiles:
+                    if casefile.final_letter:
+                        attachments.append(casefile)
+                        break
+            # send_mail(subject, message, from_address, to_addresses_list, fail_silently=False)
+            email = EmailMessage(subject, body, from_address, to_addresses_list, bcc_addresses_list,
+                                 reply_to=reply_to_list, headers=headers, attachments=attachments)
+            email.send(fail_silently=False)
+
     # for new records, there is a custom signal receiver in the receivers.py file listening for
     # the post_save event signal, and when the post_save's 'created' boolean is true,
     # this custom receiver will create the case hash (public ID) and send a confirmation email
@@ -150,10 +180,10 @@ class CaseFile(HistoryModel):
 
     name = property(_get_filename)
     file = models.FileField(upload_to=casefile_location)
-    case = models.ForeignKey('Case', related_name='case_files')
+    case = models.ForeignKey('Case', related_name='casefiles')
     from_requester = models.BooleanField(default=False)
     final_letter = models.BooleanField(default=False)
-    uploader = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, related_name="case_files")
+    uploader = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, related_name="casefiles")
     uploaded_date = models.DateField(auto_now_add=True, null=True, blank=True)
 
     def __str__(self):

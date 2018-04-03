@@ -237,6 +237,7 @@ REST_FRAMEWORK_EXTENSIONS = {
 # .zip - application/zip
 # .bz - application/x-bzip
 # .bz2 - application/x-bzip2
+CONTENT_TYPE_DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 CONTENT_TYPES = ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                   'application/pdf', 'text/plain', 'image/jpeg', 'image/png', 'image/gif', 'image/tiff', 'image/bmp',
                  'application/zip', 'application/x-bzip', 'application/x-bzip2']
