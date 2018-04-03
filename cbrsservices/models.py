@@ -112,7 +112,8 @@ class Case(HistoryModel):
                         break
             # send_mail(subject, message, from_address, to_addresses_list, fail_silently=False)
             email = EmailMessage(subject, body, from_address, to_addresses_list, bcc_addresses_list,
-                                 reply_to=reply_to_list, headers=headers, attachments=attachments)
+                                 reply_to=reply_to_list, headers=headers)
+            email.attach_file(attachments[0].file.path)
             email.send(fail_silently=False)
 
     # for new records, there is a custom signal receiver in the receivers.py file listening for

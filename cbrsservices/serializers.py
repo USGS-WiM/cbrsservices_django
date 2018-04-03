@@ -52,7 +52,7 @@ class CaseFileSerializer(serializers.ModelSerializer):
                     try:
                         document = ZipFile(file)
                         # read MIME type information for parts of the package, listed in the [Content_Types].xml file
-                        if '[Content_Types].xml' in document:
+                        if '[Content_Types].xml' in document.namelist():
                             content_types_xml = document.read('[Content_Types].xml')
                             document.close()
                             # check if docx is included as a MIME type
