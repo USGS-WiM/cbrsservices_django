@@ -326,8 +326,8 @@ class ReportCasesByUnitSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ReportCase
-        fields = ('id', 'status', 'prohibition_date', 'cbrs_unit_string', 'request_date', 'property_string',
-                  'determination_string', 'street_address')
+        fields = ('id', 'case_reference', 'status', 'prohibition_date', 'cbrs_unit_string', 'request_date',
+                  'property_string', 'determination_string', 'street_address', 'city', 'duplicate')
 
 
 class ReportDaysToResolutionSerializer(serializers.ModelSerializer):
