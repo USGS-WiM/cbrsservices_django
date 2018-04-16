@@ -2,7 +2,7 @@ import json
 from itertools import chain
 from datetime import datetime as dt
 from django.contrib.auth import authenticate, login, logout
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Prefetch
 from django.db.models.expressions import RawSQL
 from rest_framework import views, viewsets, generics, permissions, authentication, status
 from rest_framework.decorators import detail_route
@@ -51,8 +51,7 @@ class HistoryViewSet(viewsets.ModelViewSet):
     permission_classes = (IsActive,)
 
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
-        serializer.save(modified_by=self.request.user)
+        serializer.save(created_by=self.request.user, modified_by=self.request.user)
 
     def perform_update(self, serializer):
         serializer.save(modified_by=self.request.user)
@@ -531,7 +530,9 @@ class SystemMapViewSet(HistoryViewSet):
 
     # override the default queryset to allow filtering by URL arguments
     def get_queryset(self):
-        queryset = SystemMap.objects.all()
+        # prefetch_related only the exact, necessary fields to greatly improve the response time of the query
+        queryset = SystemMap.objects.all()#.prefetch_related(
+            #Prefetch('system_units', queryset=SystemUnit.objects.only('system_unit_number').all())).all()
         # filter by unit ID, exact
         unit_id = self.request.query_params.get('unit', None)
         if unit_id is not None:
