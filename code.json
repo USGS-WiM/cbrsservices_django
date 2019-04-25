@@ -1,0 +1,50 @@
+[
+  {
+    "name": "cbrsservices_django",
+    "organization": "U.S. Geological Survey",
+    "description": "Web services for CBRS DMS (Coastal Barrier Resources System Determinations Management System)",
+    "version": "v1.0.0",
+    "status": "Production",
+
+    "permissions": {
+      "usageType": "openSource",
+      "licenses": [
+        {
+          "name": "Public Domain",
+          "URL": "https://github.com/USGS-WiM/whispersservices_django/blob/master/LICENSE.md"
+        }
+      ]
+    },
+
+    "homepageURL": "https://wim.usgs.gov",
+    "downloadURL": "https://github.com/USGS-WiM/cbrsservices_django/archive/master.zip",
+    "disclaimerURL": "https://github.com/USGS-WiM/cbrsservices_django/blob/master/DISCLAIMER.md",
+    "repositoryUrl": "https://github.com/USGS-WiM/cbrsservices_django",
+    "vcs": "git",
+
+    "laborHours": null,
+
+    "tags": [
+      "cbra",
+      "cbrs",
+      "determinations",
+      "management",
+      "web",
+      "services",
+      "api"
+    ],
+
+    "languages": [
+      "python"
+    ],
+
+    "contact": {
+      "name": "Aaron Stephenson",
+      "email": "astephenson@usgs.gov"
+    },
+
+    "date": {
+      "metadataLastUpdated": "2019-04-25"
+    }
+  }
+]
