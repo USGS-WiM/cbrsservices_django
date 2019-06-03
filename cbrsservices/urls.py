@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, url, include
+from django.conf.urls import url, include
 from cbrsservices import views, receivers
 from rest_framework.routers import DefaultRouter
 
@@ -20,10 +20,10 @@ router.register(r'systemmaps', views.SystemMapViewSet, 'systemmaps')
 router.register(r'fieldoffices', views.FieldOfficeViewSet, 'fieldoffices')
 router.register(r'users', views.UserViewSet, 'users')
 
-urlpatterns = patterns('',
-                       url(r'^', include(router.urls)),
-                       url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-                       url(r'^auth/$', views.AuthView.as_view(), name='authenticate'),
-                       url(r'^reportcases/$', views.ReportCaseView.as_view(), name='reportcases'),
-                       url(r'^reportcasecounts/$', views.ReportCaseCountView.as_view(), name='reportcasecounts')
-                       )
+urlpatterns = [
+    url(r'^', include(router.urls)),
+    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    url(r'^auth/$', views.AuthView.as_view(), name='authenticate'),
+    url(r'^reportcases/$', views.ReportCaseView.as_view(), name='reportcases'),
+    url(r'^reportcasecounts/$', views.ReportCaseCountView.as_view(), name='reportcasecounts')
+]

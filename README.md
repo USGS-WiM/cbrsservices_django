@@ -43,6 +43,8 @@ Note that on Windows, the default arrangement of a settings.py file reading a se
 
 Run `python3 manage.py runserver` for a dev server with live reload. Navigate to `http://localhost:8000/cbrsservices/`. The web services will automatically reload if you change any of the source files. This will use the development environment configuration.
 
+Note: If developing on Windows, the python magic library must be manually installed by placing all the *.dll files from this repo's "libmagicwin64" folder into "C:\Windows\System32".
+
 ## Production server
 
 In a production environment (or really, any non-development environment) this Django project should be run through a dedicated web server, likely using the Web Server Gateway Interface [(WSGI)](https://wsgi.readthedocs.io/en/latest/). This repository includes sample configuration files (*.conf in the root folder) for running this project in [Apache HTTP Server](https://docs.djangoproject.com/en/dev/howto/deployment/wsgi/modwsgi/).

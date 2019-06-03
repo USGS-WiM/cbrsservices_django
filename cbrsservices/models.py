@@ -29,10 +29,10 @@ class HistoryModel(models.Model):
     """
 
     created_date = models.DateField(default=date.today, null=True, blank=True, db_index=True)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, db_index=True,
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, models.PROTECT, null=True, blank=True, db_index=True,
                                    related_name='%(class)s_creator')
     modified_date = models.DateField(auto_now=True, null=True, blank=True)
-    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, db_index=True,
+    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, models.PROTECT, null=True, blank=True, db_index=True,
                                     related_name='%(class)s_modifier')
     history = HistoricalRecords()
 
@@ -122,15 +122,15 @@ class Case(HistoryModel):
 
     case_number = property(_get_id)
     case_reference = models.CharField(max_length=255, blank=True)
-    duplicate = models.ForeignKey('self', null=True, blank=True)
+    duplicate = models.ForeignKey('self', models.PROTECT, null=True, blank=True)
     status = property(_get_status)
     request_date = models.DateField(default=date.today, null=True, blank=True)
-    requester = models.ForeignKey('Requester', related_name='cases', on_delete=models.PROTECT)
-    property = models.ForeignKey('Property', related_name='cases', on_delete=models.PROTECT)
-    cbrs_unit = models.ForeignKey('SystemUnit', null=True, blank=True, on_delete=models.PROTECT)
-    map_number = models.ForeignKey('SystemMap', null=True, blank=True, on_delete=models.PROTECT)
+    requester = models.ForeignKey('Requester', models.PROTECT, related_name='cases')
+    property = models.ForeignKey('Property', models.PROTECT, related_name='cases')
+    cbrs_unit = models.ForeignKey('SystemUnit', models.PROTECT, null=True, blank=True)
+    map_number = models.ForeignKey('SystemMap', models.PROTECT, null=True, blank=True)
     cbrs_map_date = models.DateField(null=True, blank=True)
-    determination = models.ForeignKey('Determination', null=True, blank=True, on_delete=models.PROTECT)
+    determination = models.ForeignKey('Determination', models.PROTECT, null=True, blank=True)
     prohibition_date = models.DateField(null=True, blank=True)
     distance = models.FloatField(null=True, blank=True)
     fws_fo_received_date = models.DateField(null=True, blank=True)
@@ -138,14 +138,13 @@ class Case(HistoryModel):
     final_letter_date = models.DateField(null=True, blank=True)
     close_date = models.DateField(null=True, blank=True)
     final_letter_recipient = models.CharField(max_length=255, blank=True)
-    analyst = models.ForeignKey(settings.AUTH_USER_MODEL,
-                                related_name='analyst', null=True, blank=True, on_delete=models.PROTECT)
+    analyst = models.ForeignKey(settings.AUTH_USER_MODEL, models.PROTECT, related_name='analyst', null=True, blank=True)
     analyst_signoff_date = models.DateField(null=True, blank=True)
-    qc_reviewer = models.ForeignKey(settings.AUTH_USER_MODEL,
-                                    related_name='qc_reviewer', null=True, blank=True, on_delete=models.PROTECT)
+    qc_reviewer = models.ForeignKey(settings.AUTH_USER_MODEL, models.PROTECT,
+                                    related_name='qc_reviewer', null=True, blank=True)
     qc_reviewer_signoff_date = models.DateField(null=True, blank=True)
-    fws_reviewer = models.ForeignKey(settings.AUTH_USER_MODEL,
-                                     related_name='fws_reviewer', null=True, blank=True, on_delete=models.PROTECT)
+    fws_reviewer = models.ForeignKey(settings.AUTH_USER_MODEL, models.PROTECT,
+                                     related_name='fws_reviewer', null=True, blank=True)
     fws_reviewer_signoff_date = models.DateField(null=True, blank=True)
     priority = models.BooleanField(default=False)
     on_hold = models.BooleanField(default=False)
@@ -181,10 +180,11 @@ class CaseFile(HistoryModel):
 
     name = property(_get_filename)
     file = models.FileField(upload_to=casefile_location)
-    case = models.ForeignKey('Case', related_name='casefiles')
+    case = models.ForeignKey('Case', models.PROTECT, related_name='casefiles')
     from_requester = models.BooleanField(default=False)
     final_letter = models.BooleanField(default=False)
-    uploader = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, related_name="casefiles")
+    uploader = models.ForeignKey(settings.AUTH_USER_MODEL, models.PROTECT, null=True, blank=True,
+                                 related_name="casefiles")
     uploaded_date = models.DateField(auto_now_add=True, null=True, blank=True)
 
     def __str__(self):
@@ -246,8 +246,8 @@ class CaseTag(HistoryModel):
     Table to allow many-to-many relationship between Cases and Tags.
     """
 
-    case = models.ForeignKey('Case')
-    tag = models.ForeignKey('Tag')
+    case = models.ForeignKey('Case', models.CASCADE)
+    tag = models.ForeignKey('Tag', models.CASCADE)
     history = HistoricalRecords()
 
     def __str__(self):
@@ -288,7 +288,7 @@ class Comment(HistoryModel):
     """
 
     comment = models.TextField()
-    acase = models.ForeignKey('Case', related_name='comments', on_delete=models.CASCADE)
+    acase = models.ForeignKey('Case', models.CASCADE, related_name='comments')
 
     def __str__(self):
         return self.comment
@@ -330,9 +330,8 @@ class SystemUnit(HistoryModel):
 
     system_unit_number = models.CharField(max_length=16, unique=True)
     system_unit_name = models.CharField(max_length=255, blank=True)
-    system_unit_type = models.ForeignKey('SystemUnitType', on_delete=models.PROTECT)
-    field_office = models.ForeignKey('FieldOffice',
-                                     related_name='system_units', null=True, blank=True, on_delete=models.PROTECT)
+    system_unit_type = models.ForeignKey('SystemUnitType', models.PROTECT)
+    field_office = models.ForeignKey('FieldOffice', models.PROTECT, related_name='system_units', null=True, blank=True)
     system_maps = models.ManyToManyField('SystemMap', through='SystemUnitMap', related_name='system_units')
 
     def __str__(self):
@@ -364,7 +363,7 @@ class SystemUnitProhibitionDate(HistoryModel):
     """
 
     prohibition_date = models.DateField()
-    system_unit = models.ForeignKey('SystemUnit', related_name='prohibition_dates', on_delete=models.CASCADE)
+    system_unit = models.ForeignKey('SystemUnit', models.CASCADE, related_name='prohibition_dates')
 
     def __str__(self):
         return self.prohibition_date
@@ -380,8 +379,8 @@ class SystemUnitMap(HistoryModel):
     Table to allow many-to-many relationship between System Units and Maps.
     """
 
-    system_unit = models.ForeignKey('SystemUnit')
-    system_map = models.ForeignKey('SystemMap')
+    system_unit = models.ForeignKey('SystemUnit', models.CASCADE)
+    system_map = models.ForeignKey('SystemMap', models.CASCADE)
     history = HistoricalRecords()
 
     def __str__(self):

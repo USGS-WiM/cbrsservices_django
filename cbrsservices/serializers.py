@@ -26,9 +26,8 @@ class CaseFileSerializer(serializers.ModelSerializer):
             # we need to test for the host platform before we can initialize the Magic reader, since python-magic
             # must be manually configured on Windows after installation, but is automatically added to the system path
             # on Linux during installation; the magic_file shouldn't need to be explicitly referenced on Linux
-            filemagic = None
             if platform.system() == 'Windows':
-                magic_file = "D:\software\libmagicwin64\magic.mgc"
+                magic_file = settings.MAGIC_PATH + "magic.mgc"
                 filemagic = magic.Magic(magic_file=magic_file, mime=True)
             else:
                 filemagic = magic.Magic(mime=True)
