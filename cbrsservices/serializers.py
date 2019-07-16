@@ -6,6 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 from rest_framework import serializers
 from cbrsservices.models import *
+from datetime import datetime
 
 
 ######
@@ -129,8 +130,8 @@ class CaseSerializer(serializers.ModelSerializer):
                   'determination', 'determination_string', 'prohibition_date', 'distance', 'fws_fo_received_date',
                   'fws_hq_received_date', 'final_letter_date', 'close_date', 'final_letter_recipient', 'analyst',
                   'analyst_string', 'analyst_signoff_date', 'qc_reviewer', 'qc_reviewer_string',
-                  'qc_reviewer_signoff_date',
-                  'priority', 'on_hold', 'invalid', 'comments', 'tags', 'casefiles', 'created_by', 'modified_by',)
+                  'qc_reviewer_signoff_date', 'priority', 'on_hold', 'invalid', 'comments', 'tags', 'casefiles',
+                  'created_by', 'modified_by', 'hard_copy_map_reviewed')
         read_only_fields = ('case_number', 'status', 'comments', 'tags', 'casefiles',)
 
 
@@ -142,8 +143,8 @@ class WorkbenchSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Case
-        fields = ('id', 'case_reference', 'status', 'request_date', 'property_string', 'cbrs_unit_string',
-                  'distance', 'analyst_string', 'qc_reviewer_string', 'priority', 'on_hold', 'invalid', 'duplicate',)
+        fields = ('id', 'case_reference', 'status', 'request_date', 'property_string', 'cbrs_unit_string', 'distance',
+        'analyst_string', 'qc_reviewer_string', 'priority', 'on_hold', 'invalid', 'duplicate', 'tags', 'hard_copy_map_reviewed')
 
 
 class LetterSerializer(serializers.ModelSerializer):
@@ -257,19 +258,27 @@ class DeterminationSerializer(serializers.ModelSerializer):
 
 
 class SystemUnitSerializer(serializers.ModelSerializer):
+    system_unit_type_string = serializers.StringRelatedField(source='system_unit_type')
 
     class Meta:
         model = SystemUnit
-        fields = ('id', 'system_unit_number', 'system_unit_name', 'field_office', 'system_maps',)
+        fields = ('id', 'system_unit_number', 'system_unit_name', 'system_unit_type', 'system_unit_type_string', 'field_office', 'system_maps',)
         read_only_fields = ('system_maps',)
+
+class SystemUnitTypeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = SystemUnitType
+        fields = ('id', 'created_date', 'modified_date', 'unit_type', 'created_by_id', 'modified_by_id',)
 
 
 class SystemUnitProhibitionDateSerializer(serializers.ModelSerializer):
-    prohibition_date_mdy = serializers.DateField(format='%m/%d/%Y', source='prohibition_date')
+    prohibition_date_mdy = serializers.DateField(format='%m/%d/%y', source='prohibition_date')
+    system_unit_string = serializers.StringRelatedField(source='system_unit')
 
     class Meta:
         model = SystemUnitProhibitionDate
-        fields = ('id', 'prohibition_date', 'prohibition_date_mdy', 'system_unit',)
+        fields = ('id', 'prohibition_date', 'prohibition_date_mdy', 'system_unit', 'system_unit_string',)
 
 
 class SystemUnitMapSerializer(serializers.ModelSerializer):
@@ -322,11 +331,21 @@ class ReportCasesByUnitSerializer(serializers.ModelSerializer):
     property_string = serializers.StringRelatedField(source='property')
     determination_string = serializers.StringRelatedField(source='determination')
     street_address = serializers.SerializerMethodField()
+    tags = serializers.StringRelatedField(many=True)
+    comments = serializers.StringRelatedField(many=True)
+    map_number_string = serializers.StringRelatedField(source='map_number')
+    analyst_string = serializers.StringRelatedField(source='analyst')
+    qc_reviewer_string = serializers.StringRelatedField(source='qc_reviewer')
+    created_by_string = serializers.StringRelatedField(source='created_by')
+    modified_by_string = serializers.StringRelatedField(source='modified_by')
 
     class Meta:
         model = ReportCase
-        fields = ('id', 'case_reference', 'status', 'prohibition_date', 'cbrs_unit_string', 'request_date',
-                  'property_string', 'determination_string', 'street_address', 'duplicate')
+        fields = ('id', 'case_reference', 'status', 'prohibition_date', 'cbrs_unit_string', 'request_date', 'final_letter_date',
+                  'property_string', 'determination_string', 'street_address', 'duplicate', 'tags', 'comments', 'case_number', 'case_reference',
+                  'duplicate', 'property', 'map_number_string', 'cbrs_map_date', 'distance', 'fws_fo_received_date', 'fws_hq_received_date', 'close_date',
+                  'final_letter_recipient', 'analyst_string', 'analyst_signoff_date', 'qc_reviewer_string', 'qc_reviewer_signoff_date', 'priority',
+                  'on_hold', 'invalid', 'casefiles', 'created_by', 'created_by_string', 'modified_by_string')
 
 
 class ReportDaysToResolutionSerializer(serializers.ModelSerializer):
@@ -378,7 +397,8 @@ class UserSerializer(serializers.ModelSerializer):
         if not user.is_staff:
             raise serializers.ValidationError("you are not authorized to create users")
         password = validated_data.pop('password', None)
-        instance = self.Meta.model(**validated_data)
+        print(validated_data)
+        instance = self.Meta.model(**validated_data) #issue is here
         if password is not None:
             instance.set_password(password)
         instance.save()
@@ -397,7 +417,7 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-    password = serializers.CharField(write_only=True)
+    password = serializers.CharField(write_only=True, required=False)
 
     class Meta:
         model = User

@@ -51,10 +51,10 @@ class HistoryViewSet(viewsets.ModelViewSet):
     permission_classes = (IsActive,)
 
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user, modified_by=self.request.user)
+        serializer.save() # issue is here, trying to remove
 
     def perform_update(self, serializer):
-        serializer.save(modified_by=self.request.user)
+        serializer.save()
 
 
 ######
@@ -234,6 +234,10 @@ class CaseViewSet(HistoryViewSet):
         invalid = self.request.query_params.get('invalid', None)
         if invalid is not None:
             queryset = queryset.filter(invalid__exact=invalid)
+        # filter by hard_copy_map_reviewed, exact
+        hard_copy_map_reviewed = self.request.query_params.get('hard_copy_map_reviewed', None)
+        if hard_copy_map_reviewed is not None:
+            queryset = queryset.filter(hard_copy_map_reviewed__exact=hard_copy_map_reviewed)
         # filter by duplicate, exact (also include the original case, per cooperator request)
         duplicate = self.request.query_params.get('duplicate', None)
         if duplicate is not None:
@@ -479,7 +483,18 @@ class SystemUnitViewSet(CacheResponseMixin, HistoryViewSet):
                 Q(system_unit_number__icontains=freetext) |
                 Q(system_unit_name__icontains=freetext) |
                 Q(field_office__field_office_number__icontains=freetext) |
+                Q(system_unit_type__unit_type__icontains=freetext) |
                 Q(field_office__field_office_name__icontains=freetext))
+        return queryset
+
+class SystemUnitTypeViewSet(CacheResponseMixin, HistoryViewSet):
+    # queryset = SystemUnit.objects.all()
+    serializer_class = SystemUnitTypeSerializer
+    # permission_classes = (permissions.IsAuthenticated,)
+
+    # override the default queryset to allow filtering by URL arguments
+    def get_queryset(self):
+        queryset = SystemUnitType.objects.all()
         return queryset
 
 
@@ -497,9 +512,10 @@ class SystemUnitProhibitionDateViewSet(HistoryViewSet):
             queryset = queryset.filter(system_unit_id__exact=unit_id)
         # filter by freetext, case-insensitive contain
         freetext = self.request.query_params.get('freetext', None)
-        if freetext is not None:
+        if freetext is not None: # trying to compare freetext to a formatted prohibition date, not working
             queryset = queryset.filter(
                 Q(system_unit__id__icontains=freetext) |
+                Q(system_unit__system_unit_number__icontains=freetext) |
                 Q(prohibition_date__icontains=freetext))
         return queryset
 
@@ -544,6 +560,7 @@ class SystemMapViewSet(HistoryViewSet):
                 Q(system_units__system_unit_number__icontains=freetext) |
                 Q(map_number__icontains=freetext) |
                 Q(map_title__icontains=freetext) |
+                Q(effective__icontains=freetext) |
                 Q(map_date__icontains=freetext))
         return queryset
 
@@ -609,6 +626,11 @@ class ReportCaseView(generics.ListAPIView):
     # see https://github.com/mjumbewu/django-rest-framework-csv/issues/15
     def finalize_response(self, request, response, *args, **kwargs):
         response = super(generics.ListAPIView, self).finalize_response(request, response, *args, **kwargs)
+        ## join list of tag numbers
+        for item in response.data.get('results'):
+            for key, value in item.items():
+                if isinstance(item[key], list): # can do this better
+                    item[key] = ','.join(str(v) for v in value)
         if self.request.accepted_renderer.format == 'csv':
             self.filename += dt.now().strftime("%Y") + '-' + dt.now().strftime("%m") + '-' + dt.now().strftime(
                 "%d") + '.csv'
@@ -717,6 +739,18 @@ class UserViewSet(HistoryViewSet):
             for used_user in used_users_set:
                 used_users_ids.append(used_user.id)
             queryset = queryset.filter(id__in=used_users_ids).extra(order_by=['-is_active', 'username'])
+        # filter by freetext, case-insensitive contain
+        freetext = self.request.query_params.get('freetext', None)
+        if freetext is not None:
+            queryset = queryset.filter(
+                Q(first_name__icontains=freetext) |
+                Q(last_name__icontains=freetext) |
+                Q(email__icontains=freetext) |
+                Q(is_active__icontains=freetext) |
+                Q(is_superuser__icontains=freetext) |
+                Q(is_staff__icontains=freetext) |
+                Q(username__icontains=freetext))
+
         return queryset
 
 

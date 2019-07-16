@@ -16,6 +16,7 @@ import os
 import logging
 import logging.handlers
 from django.utils.six import moves
+import time
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 SETTINGS_DIR = os.path.dirname(__file__)
@@ -28,7 +29,7 @@ CONFIG = moves.configparser.RawConfigParser(allow_no_value=True)
 CONFIG.read('%s\settings.cfg' % SETTINGS_DIR)
 
 
-LOG_FILENAME = os.path.join(PROJECT_PATH, 'logs/cbrsservices_django.log')
+LOG_FILENAME = os.path.join(PROJECT_PATH, 'logs/cbrsservices_django' + time.strftime('%Y%m%d') + '.log')
 
 LOGGING = {
     'version': 1,
@@ -104,14 +105,13 @@ INSTALLED_APPS = [
     'cbrsservices',
 ]
 
-MIDDLEWARE_CLASSES = [
+MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',

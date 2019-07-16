@@ -149,6 +149,7 @@ class Case(HistoryModel):
     priority = models.BooleanField(default=False)
     on_hold = models.BooleanField(default=False)
     invalid = models.BooleanField(default=False)
+    hard_copy_map_reviewed = models.BooleanField(default=False)
     tags = models.ManyToManyField('Tag', through='CaseTag', related_name='cases')
 
     def __str__(self):
@@ -170,7 +171,7 @@ class CaseFile(HistoryModel):
         """Returns the name of the file"""
         return '%s' % str(self.file).split('/')[-1]
 
-    def casefile_location(instance, filename):
+    def casefile_location(self, instance, filename):
         """Returns a custom location for the case file, in a folder named for its case"""
         # print(instance.uploader_id)
         if not instance.uploader_id:
