@@ -1,5 +1,5 @@
 django==2.1.9
-djangorestframework==3.9.4
+djangorestframework==3.10.0
 drf-extensions==0.5.0
 django-cors-headers==2.4.0
 djangorestframework-csv==2.1.0
@@ -9,3 +9,4 @@ lxml==4.3.3
 python-docx==0.8.10
 psycopg2==2.8.2
 python-magic==0.4.15
+pyyaml==5.1.1

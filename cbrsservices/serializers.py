@@ -347,6 +347,33 @@ class ReportCasesByUnitSerializer(serializers.ModelSerializer):
                   'final_letter_recipient', 'analyst_string', 'analyst_signoff_date', 'qc_reviewer_string', 'qc_reviewer_signoff_date', 'priority',
                   'on_hold', 'invalid', 'casefiles', 'created_by', 'created_by_string', 'modified_by_string')
 
+class ReportCasesForUserSerializer(serializers.ModelSerializer):
+    def get_street_address(self, obj):
+        prop = obj.property
+        prop_street = Property.objects.filter(id=prop.id).values_list('street', flat=True)[0]
+        prop_street_address = prop_street.split(",")[0]
+        return prop_street_address
+
+    cbrs_unit_string = serializers.StringRelatedField(source='cbrs_unit')
+    property_string = serializers.StringRelatedField(source='property')
+    determination_string = serializers.StringRelatedField(source='determination')
+    street_address = serializers.SerializerMethodField()
+    tags = serializers.StringRelatedField(many=True)
+    comments = serializers.StringRelatedField(many=True)
+    map_number_string = serializers.StringRelatedField(source='map_number')
+    analyst_string = serializers.StringRelatedField(source='analyst')
+    qc_reviewer_string = serializers.StringRelatedField(source='qc_reviewer')
+    created_by_string = serializers.StringRelatedField(source='created_by')
+    modified_by_string = serializers.StringRelatedField(source='modified_by')
+
+    class Meta:
+        model = ReportCase
+        fields = ('id', 'case_reference', 'status', 'prohibition_date', 'cbrs_unit_string', 'request_date', 'final_letter_date',
+                  'property_string', 'determination_string', 'street_address', 'duplicate', 'tags', 'comments', 'case_number', 'case_reference',
+                  'duplicate', 'property', 'map_number_string', 'cbrs_map_date', 'distance', 'fws_fo_received_date', 'fws_hq_received_date', 'close_date',
+                  'final_letter_recipient', 'analyst_string', 'analyst_signoff_date', 'qc_reviewer_string', 'qc_reviewer_signoff_date', 'priority',
+                  'on_hold', 'invalid', 'casefiles', 'created_by', 'created_by_string', 'modified_by_string')
+
 
 class ReportDaysToResolutionSerializer(serializers.ModelSerializer):
     property_string = serializers.StringRelatedField(source='property')
@@ -397,7 +424,6 @@ class UserSerializer(serializers.ModelSerializer):
         if not user.is_staff:
             raise serializers.ValidationError("you are not authorized to create users")
         password = validated_data.pop('password', None)
-        print(validated_data)
         instance = self.Meta.model(**validated_data) #issue is here
         if password is not None:
             instance.set_password(password)

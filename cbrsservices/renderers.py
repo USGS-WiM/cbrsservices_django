@@ -60,6 +60,46 @@ class ReportCasesByUnitCSVRenderer (PaginatedCSVRenderer):
         'hard_copy_map_reviewed': 'Hard Copy Map Reviewed'
     }
 
+class ReportCasesForUserCSVRenderer (PaginatedCSVRenderer):
+    header = ['id', 'status', 'prohibition_date', 'cbrs_unit_string', 'request_date', 'final_letter_date', 'determination_string', 'street_address', 
+        'tags', 'comments', 'case_number', 'case_reference', 'duplicate', 'property_string', 'map_number_string', 'cbrs_map_date', 'distance', 'fws_fo_received_date',
+        'fws_hq_received_date', 'close_date', 'final_letter_recipient', 'analyst_string', 'analyst_signoff_date', 'qc_reviewer_string', 'qc_reviewer_signoff_date',
+        'priority', 'on_hold', 'invalid', 'casefiles', 'created_by_string', 'modified_by_string', 'hard_copy_map_reviewed']
+    labels = {
+        'id': 'Case ID',
+        'status': 'Status',
+        'prohibition_date': 'Prohibition Date',
+        'cbrs_unit_string': 'CBRS Unit',
+        'request_date': 'Request Date',
+        'final_letter_date': 'Final Letter Date',
+        'determination_string': 'Determination',
+        'street_address': 'Street Address',
+        'tags': 'Tags',
+        'comments': 'Comments',
+        'case_number': 'Case Number',
+        'case_reference': 'Case Reference',
+        'duplicate': 'Duplicate',
+        'property_string': 'Property',
+        'map_number_string': 'Map Number',
+        'cbrs_map_date': 'CBRS Map Date',
+        'distance': 'Distance',
+        'fws_fo_received_date': 'FWS FO Received Date',
+        'fws_hq_received_date': 'FWS QH Received Date',
+        'close_date': 'Close Date',
+        'final_letter_recipient': 'Final Letter Recipient',
+        'analyst_string': 'Analyst',
+        'analyst_signoff_date': 'Analyst Signoff Date',
+        'qc_reviewer_string': 'QC Reviewer',
+        'qc_reviewer_signoff_date': 'QC Reviewer Signoff Date',
+        'priority': 'Priority',
+        'on_hold': 'On Hold',
+        'invalid': 'Invalid',
+        'casefiles': 'Casefiles',
+        'created_by_string': 'Created By',
+        'modified_by_string': 'Modified By',
+        'hard_copy_map_reviewed': 'Hard Copy Map Reviewed'
+    }
+
 
 class ReportDaysToResolutionCSVRenderer (PaginatedCSVRenderer):
     header = ['id', 'case_reference', 'request_date', 'close_date', 'close_days']

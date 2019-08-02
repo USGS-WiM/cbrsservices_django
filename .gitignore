@@ -1,0 +1,9 @@
+env
+templates
+*__pycache__
+*.log
+cbrsservices_django/settings.cfg
+
+.vscode/*
+
+.idea/*

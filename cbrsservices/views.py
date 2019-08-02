@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.db.models import Q, Count, Prefetch
 from django.db.models.expressions import RawSQL
 from rest_framework import views, viewsets, generics, permissions, authentication, status
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from rest_framework.parsers import FormParser, MultiPartParser
@@ -69,7 +69,7 @@ class CaseViewSet(HistoryViewSet):
     # serializer_class = CaseSerializer
     # permission_classes = (permissions.IsAuthenticated,)
 
-    @detail_route(methods=['post'])
+    @action(methods=['post'], detail=True)
     def send_final_email(self, request, pk=None):
         case = self.get_object()
         case.send_final_email()
@@ -469,7 +469,7 @@ class DeterminationViewSet(HistoryViewSet):
 
 
 class SystemUnitViewSet(CacheResponseMixin, HistoryViewSet):
-    # queryset = SystemUnit.objects.all()
+    queryset = SystemUnit.objects.all()
     serializer_class = SystemUnitSerializer
     # permission_classes = (permissions.IsAuthenticated,)
 
@@ -485,6 +485,7 @@ class SystemUnitViewSet(CacheResponseMixin, HistoryViewSet):
                 Q(field_office__field_office_number__icontains=freetext) |
                 Q(system_unit_type__unit_type__icontains=freetext) |
                 Q(field_office__field_office_name__icontains=freetext))
+        #print(queryset.values())
         return queryset
 
 class SystemUnitTypeViewSet(CacheResponseMixin, HistoryViewSet):
@@ -597,6 +598,8 @@ class ReportCaseView(generics.ListAPIView):
                 renderer_classes = (ReportDaysToResolutionCSVRenderer,) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)
             elif report is not None and report == 'daystoeachstatus':
                 renderer_classes = (ReportDaysToEachStatusCSVRenderer,) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)
+            elif report is not None and report == 'allcasesforuser':
+                renderer_classes = (ReportCasesForUserCSVRenderer,) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)
             else:
                 renderer_classes = (PaginatedCSVRenderer,) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)
         else:
@@ -607,6 +610,7 @@ class ReportCaseView(generics.ListAPIView):
     def get_serializer_class(self):
         report = self.request.query_params.get('report', None)
         cbrs_unit = self.request.query_params.get('cbrs_unit', None)
+        user = self.request.query_params.get('user', None)
         # if report is not specified or not equal to an approved report, assume generic report
         if report is not None and report == 'casesbyunit':
             self.filename = "Report_CasesByUnit_"
@@ -619,6 +623,11 @@ class ReportCaseView(generics.ListAPIView):
         elif report is not None and report == 'daystoeachstatus':
             self.filename = "Report_DaysToEachStatus_"
             return ReportDaysToEachStatusSerializer
+        elif report is not None and report == 'allcasesforuser':
+            self.filename = "Report_CasesForUser_"
+            if user is not None:
+                self.filename += user + "_"
+            return ReportCasesForUserSerializer
         else:
             return ReportSerializer
 
@@ -647,6 +656,13 @@ class ReportCaseView(generics.ListAPIView):
         if cbrs_unit is not None:
             cbrs_unit_list = cbrs_unit.split(',')
             queryset = queryset.filter(cbrs_unit__in=cbrs_unit_list).order_by('id')
+        # filter by user
+        user = self.request.query_params.get('user', None)
+        if user is not None:
+            queryset = queryset.filter(
+                Q(analyst__username__iexact=user) |
+                Q(qc_reviewer__username__iexact=user))
+                # Q(comments__comment__icontains=user)) # some comments mention users, but not able to get this returned
         # filter by range for date field (after only, before only, or between, depending on which URL params appear)
         report = self.request.query_params.get('report', None)
         if report is not None and report == 'daystoeachstatus':
