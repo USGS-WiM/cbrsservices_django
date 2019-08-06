@@ -2,18 +2,18 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
+import django.core.validators
+import localflavor.us.models
+from django.conf import settings
 import django.db.models.deletion
 import datetime
-import django.core.validators
-from django.conf import settings
-import localflavor.us.models
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('cbrsservices', '0002_auto_20180403_1033'),
+        ('cbrsservices', '0001_initial'),
     ]
 
     operations = [
@@ -36,17 +36,14 @@ class Migration(migrations.Migration):
                 ('analyst_signoff_date', models.DateField(blank=True, null=True)),
                 ('qc_reviewer_signoff_date', models.DateField(blank=True, null=True)),
                 ('fws_reviewer_signoff_date', models.DateField(blank=True, null=True)),
-                ('hard_copy_map_reviewed', models.BooleanField(default=False)),
                 ('priority', models.BooleanField(default=False)),
                 ('on_hold', models.BooleanField(default=False)),
                 ('invalid', models.BooleanField(default=False)),
+                ('hard_copy_map_reviewed', models.BooleanField(default=False)),
                 ('history_id', models.AutoField(primary_key=True, serialize=False)),
                 ('history_date', models.DateTimeField()),
                 ('history_type', models.CharField(max_length=1, choices=[('+', 'Created'), ('~', 'Changed'), ('-', 'Deleted')])),
                 ('analyst', models.ForeignKey(blank=True, null=True, related_name='+', on_delete=django.db.models.deletion.DO_NOTHING, to=settings.AUTH_USER_MODEL, db_constraint=False)),
-                ('cbrs_unit', models.ForeignKey(blank=True, null=True, related_name='+', on_delete=django.db.models.deletion.DO_NOTHING, to='cbrsservices.SystemUnit', db_constraint=False)),
-                ('created_by', models.ForeignKey(blank=True, null=True, related_name='+', on_delete=django.db.models.deletion.DO_NOTHING, to=settings.AUTH_USER_MODEL, db_constraint=False)),
-                ('determination', models.ForeignKey(blank=True, null=True, related_name='+', on_delete=django.db.models.deletion.DO_NOTHING, to='cbrsservices.Determination', db_constraint=False)),
             ],
             options={
                 'verbose_name': 'historical case',
@@ -183,17 +180,14 @@ class Migration(migrations.Migration):
                 ('analyst_signoff_date', models.DateField(blank=True, null=True)),
                 ('qc_reviewer_signoff_date', models.DateField(blank=True, null=True)),
                 ('fws_reviewer_signoff_date', models.DateField(blank=True, null=True)),
-                ('hard_copy_map_reviewed', models.BooleanField(default=False)),
                 ('priority', models.BooleanField(default=False)),
                 ('on_hold', models.BooleanField(default=False)),
                 ('invalid', models.BooleanField(default=False)),
+                ('hard_copy_map_reviewed', models.BooleanField(default=False)),
                 ('history_id', models.AutoField(primary_key=True, serialize=False)),
                 ('history_date', models.DateTimeField()),
                 ('history_type', models.CharField(max_length=1, choices=[('+', 'Created'), ('~', 'Changed'), ('-', 'Deleted')])),
                 ('analyst', models.ForeignKey(blank=True, null=True, related_name='+', on_delete=django.db.models.deletion.DO_NOTHING, to=settings.AUTH_USER_MODEL, db_constraint=False)),
-                ('cbrs_unit', models.ForeignKey(blank=True, null=True, related_name='+', on_delete=django.db.models.deletion.DO_NOTHING, to='cbrsservices.SystemUnit', db_constraint=False)),
-                ('created_by', models.ForeignKey(blank=True, null=True, related_name='+', on_delete=django.db.models.deletion.DO_NOTHING, to=settings.AUTH_USER_MODEL, db_constraint=False)),
-                ('determination', models.ForeignKey(blank=True, null=True, related_name='+', on_delete=django.db.models.deletion.DO_NOTHING, to='cbrsservices.Determination', db_constraint=False)),
             ],
             options={
                 'verbose_name': 'historical report case',
@@ -265,10 +259,6 @@ class Migration(migrations.Migration):
                 ('history_date', models.DateTimeField()),
                 ('history_type', models.CharField(max_length=1, choices=[('+', 'Created'), ('~', 'Changed'), ('-', 'Deleted')])),
                 ('created_by', models.ForeignKey(blank=True, null=True, related_name='+', on_delete=django.db.models.deletion.DO_NOTHING, to=settings.AUTH_USER_MODEL, db_constraint=False)),
-                ('field_office', models.ForeignKey(blank=True, null=True, related_name='+', on_delete=django.db.models.deletion.DO_NOTHING, to='cbrsservices.FieldOffice', db_constraint=False)),
-                ('history_user', models.ForeignKey(null=True, related_name='+', on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
-                ('modified_by', models.ForeignKey(blank=True, null=True, related_name='+', on_delete=django.db.models.deletion.DO_NOTHING, to=settings.AUTH_USER_MODEL, db_constraint=False)),
-                ('system_unit_type', models.ForeignKey(blank=True, null=True, related_name='+', on_delete=django.db.models.deletion.DO_NOTHING, to='cbrsservices.SystemUnitType', db_constraint=False)),
             ],
             options={
                 'verbose_name': 'historical system unit',
@@ -289,7 +279,6 @@ class Migration(migrations.Migration):
                 ('created_by', models.ForeignKey(blank=True, null=True, related_name='+', on_delete=django.db.models.deletion.DO_NOTHING, to=settings.AUTH_USER_MODEL, db_constraint=False)),
                 ('history_user', models.ForeignKey(null=True, related_name='+', on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
                 ('modified_by', models.ForeignKey(blank=True, null=True, related_name='+', on_delete=django.db.models.deletion.DO_NOTHING, to=settings.AUTH_USER_MODEL, db_constraint=False)),
-                ('system_unit', models.ForeignKey(blank=True, null=True, related_name='+', on_delete=django.db.models.deletion.DO_NOTHING, to='cbrsservices.SystemUnit', db_constraint=False)),
             ],
             options={
                 'verbose_name': 'historical system unit prohibition date',
@@ -342,6 +331,201 @@ class Migration(migrations.Migration):
             model_name='case',
             name='hard_copy_map_reviewed',
             field=models.BooleanField(default=False),
+        ),
+        migrations.AlterField(
+            model_name='case',
+            name='created_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='case_creator', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='case',
+            name='duplicate',
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='cbrsservices.Case'),
+        ),
+        migrations.AlterField(
+            model_name='case',
+            name='modified_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='case_modifier', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='casefile',
+            name='case',
+            field=models.ForeignKey(related_name='casefiles', on_delete=django.db.models.deletion.PROTECT, to='cbrsservices.Case'),
+        ),
+        migrations.AlterField(
+            model_name='casefile',
+            name='created_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='casefile_creator', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='casefile',
+            name='modified_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='casefile_modifier', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='casefile',
+            name='uploader',
+            field=models.ForeignKey(blank=True, null=True, related_name='casefiles', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='casetag',
+            name='created_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='casetag_creator', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='casetag',
+            name='modified_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='casetag_modifier', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='comment',
+            name='created_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='comment_creator', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='comment',
+            name='modified_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='comment_modifier', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='determination',
+            name='created_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='determination_creator', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='determination',
+            name='modified_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='determination_modifier', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='fieldoffice',
+            name='created_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='fieldoffice_creator', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='fieldoffice',
+            name='modified_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='fieldoffice_modifier', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='property',
+            name='created_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='property_creator', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='property',
+            name='modified_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='property_modifier', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='requester',
+            name='created_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='requester_creator', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='requester',
+            name='modified_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='requester_modifier', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='systemmap',
+            name='created_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='systemmap_creator', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='systemmap',
+            name='modified_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='systemmap_modifier', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='systemunit',
+            name='created_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='systemunit_creator', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='systemunit',
+            name='modified_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='systemunit_modifier', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='systemunitmap',
+            name='created_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='systemunitmap_creator', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='systemunitmap',
+            name='modified_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='systemunitmap_modifier', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='systemunitprohibitiondate',
+            name='created_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='systemunitprohibitiondate_creator', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='systemunitprohibitiondate',
+            name='modified_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='systemunitprohibitiondate_modifier', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='systemunittype',
+            name='created_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='systemunittype_creator', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='systemunittype',
+            name='modified_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='systemunittype_modifier', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='tag',
+            name='created_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='tag_creator', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AlterField(
+            model_name='tag',
+            name='modified_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='tag_modifier', on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AddField(
+            model_name='historicalsystemunitprohibitiondate',
+            name='system_unit',
+            field=models.ForeignKey(blank=True, null=True, related_name='+', on_delete=django.db.models.deletion.DO_NOTHING, to='cbrsservices.SystemUnit', db_constraint=False),
+        ),
+        migrations.AddField(
+            model_name='historicalsystemunit',
+            name='field_office',
+            field=models.ForeignKey(blank=True, null=True, related_name='+', on_delete=django.db.models.deletion.DO_NOTHING, to='cbrsservices.FieldOffice', db_constraint=False),
+        ),
+        migrations.AddField(
+            model_name='historicalsystemunit',
+            name='history_user',
+            field=models.ForeignKey(null=True, related_name='+', on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AddField(
+            model_name='historicalsystemunit',
+            name='modified_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='+', on_delete=django.db.models.deletion.DO_NOTHING, to=settings.AUTH_USER_MODEL, db_constraint=False),
+        ),
+        migrations.AddField(
+            model_name='historicalsystemunit',
+            name='system_unit_type',
+            field=models.ForeignKey(blank=True, null=True, related_name='+', on_delete=django.db.models.deletion.DO_NOTHING, to='cbrsservices.SystemUnitType', db_constraint=False),
+        ),
+        migrations.AddField(
+            model_name='historicalreportcase',
+            name='cbrs_unit',
+            field=models.ForeignKey(blank=True, null=True, related_name='+', on_delete=django.db.models.deletion.DO_NOTHING, to='cbrsservices.SystemUnit', db_constraint=False),
+        ),
+        migrations.AddField(
+            model_name='historicalreportcase',
+            name='created_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='+', on_delete=django.db.models.deletion.DO_NOTHING, to=settings.AUTH_USER_MODEL, db_constraint=False),
+        ),
+        migrations.AddField(
+            model_name='historicalreportcase',
+            name='determination',
+            field=models.ForeignKey(blank=True, null=True, related_name='+', on_delete=django.db.models.deletion.DO_NOTHING, to='cbrsservices.Determination', db_constraint=False),
         ),
         migrations.AddField(
             model_name='historicalreportcase',
@@ -427,6 +611,21 @@ class Migration(migrations.Migration):
             model_name='historicalcasefile',
             name='uploader',
             field=models.ForeignKey(blank=True, null=True, related_name='+', on_delete=django.db.models.deletion.DO_NOTHING, to=settings.AUTH_USER_MODEL, db_constraint=False),
+        ),
+        migrations.AddField(
+            model_name='historicalcase',
+            name='cbrs_unit',
+            field=models.ForeignKey(blank=True, null=True, related_name='+', on_delete=django.db.models.deletion.DO_NOTHING, to='cbrsservices.SystemUnit', db_constraint=False),
+        ),
+        migrations.AddField(
+            model_name='historicalcase',
+            name='created_by',
+            field=models.ForeignKey(blank=True, null=True, related_name='+', on_delete=django.db.models.deletion.DO_NOTHING, to=settings.AUTH_USER_MODEL, db_constraint=False),
+        ),
+        migrations.AddField(
+            model_name='historicalcase',
+            name='determination',
+            field=models.ForeignKey(blank=True, null=True, related_name='+', on_delete=django.db.models.deletion.DO_NOTHING, to='cbrsservices.Determination', db_constraint=False),
         ),
         migrations.AddField(
             model_name='historicalcase',

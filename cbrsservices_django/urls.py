@@ -20,5 +20,5 @@ from django.conf import settings
 
 urlpatterns = [
     url('media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT, }),
-    url(r'^cbrsservices/', include(('cbrsservices.urls', 'cbrsservices_django'), namespace="cbrsservices_django")),
+    url(r'^cbrsservices/', include('cbrsservices.urls')),
 ]
