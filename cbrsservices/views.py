@@ -67,7 +67,7 @@ class HistoryViewSet(viewsets.ModelViewSet):
 class CaseViewSet(HistoryViewSet):
     # queryset = Case.objects.all()
     # serializer_class = CaseSerializer
-    # permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     @action(methods=['post'], detail=True)
     def send_final_email(self, request, pk=None):
@@ -274,7 +274,7 @@ class CaseViewSet(HistoryViewSet):
 class CaseFileViewSet(HistoryViewSet):
     # queryset = CaseFile.objects.all()
     serializer_class = CaseFileSerializer
-    # permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated,)
     parser_classes = (MultiPartParser, FormParser,)
 
     # override the default create to include user information
@@ -304,7 +304,7 @@ class CaseFileViewSet(HistoryViewSet):
 class PropertyViewSet(HistoryViewSet):
     # queryset = Property.objects.all()
     serializer_class = PropertySerializer
-    # permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     # override the default queryset to allow filtering by URL arguments
     def get_queryset(self):
@@ -343,7 +343,7 @@ class PropertyViewSet(HistoryViewSet):
 class RequesterViewSet(HistoryViewSet):
     # queryset = Requester.objects.all()
     serializer_class = RequesterSerializer
-    # permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     # override the default queryset to allow filtering by URL arguments
     def get_queryset(self):
@@ -405,7 +405,7 @@ class RequesterViewSet(HistoryViewSet):
 class CaseTagViewSet(HistoryViewSet):
     # queryset = CaseTag.objects.all()
     serializer_class = CaseTagSerializer
-    # permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     # override the default queryset to allow filtering by URL arguments
     def get_queryset(self):
@@ -420,7 +420,7 @@ class CaseTagViewSet(HistoryViewSet):
 class TagViewSet(HistoryViewSet):
     # queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    # permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     # override the default queryset to allow filtering by URL arguments
     def get_queryset(self):
@@ -442,7 +442,7 @@ class TagViewSet(HistoryViewSet):
 class CommentViewSet(HistoryViewSet):
     # queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    # permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated,)
     permission_classes = (IsOwnerOrReadOnly,)
 
     # override the default queryset to allow filtering by URL arguments
@@ -465,13 +465,13 @@ class CommentViewSet(HistoryViewSet):
 class DeterminationViewSet(HistoryViewSet):
     queryset = Determination.objects.all()
     serializer_class = DeterminationSerializer
-    # permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated,)
 
 
 class SystemUnitViewSet(CacheResponseMixin, HistoryViewSet):
     queryset = SystemUnit.objects.all()
     serializer_class = SystemUnitSerializer
-    # permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     # override the default queryset to allow filtering by URL arguments
     def get_queryset(self):
@@ -491,7 +491,7 @@ class SystemUnitViewSet(CacheResponseMixin, HistoryViewSet):
 class SystemUnitTypeViewSet(CacheResponseMixin, HistoryViewSet):
     # queryset = SystemUnit.objects.all()
     serializer_class = SystemUnitTypeSerializer
-    # permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     # override the default queryset to allow filtering by URL arguments
     def get_queryset(self):
@@ -502,7 +502,7 @@ class SystemUnitTypeViewSet(CacheResponseMixin, HistoryViewSet):
 class SystemUnitProhibitionDateViewSet(HistoryViewSet):
     # queryset = SystemUnitProhibitionDate.objects.all()
     serializer_class = SystemUnitProhibitionDateSerializer
-    # permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     # override the default queryset to allow filtering by URL arguments
     def get_queryset(self):
@@ -524,7 +524,7 @@ class SystemUnitProhibitionDateViewSet(HistoryViewSet):
 class SystemUnitMapViewSet(HistoryViewSet):
     # queryset = SystemUnitMap.objects.all()
     serializer_class = SystemUnitMapSerializer
-    # permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     # override the default queryset to allow filtering by URL arguments
     def get_queryset(self):
@@ -543,7 +543,7 @@ class SystemUnitMapViewSet(HistoryViewSet):
 class SystemMapViewSet(HistoryViewSet):
     # queryset = SystemMap.objects.all()
     serializer_class = SystemMapSerializer
-    # permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     # override the default queryset to allow filtering by URL arguments
     def get_queryset(self):
@@ -569,7 +569,7 @@ class SystemMapViewSet(HistoryViewSet):
 class FieldOfficeViewSet(HistoryViewSet):
     queryset = FieldOffice.objects.all()
     serializer_class = FieldOfficeSerializer
-    # permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated,)
 
 
 ######
@@ -580,7 +580,7 @@ class FieldOfficeViewSet(HistoryViewSet):
 
 
 class ReportCaseView(generics.ListAPIView):
-    permission_classes = (IsActive,)
+    permission_classes = (permissions.IsAuthenticated,)
     pagination_class = StandardResultsSetPagination
     filename = ""
 
@@ -688,7 +688,7 @@ class ReportCaseView(generics.ListAPIView):
 
 
 class ReportCaseCountView(views.APIView):
-    permission_classes = (IsActive,)
+    permission_classes = (permissions.IsAuthenticated,)
     serializer_class = ReportCountOfCasesByStatusSerializer
     filename = "Report_CountCasesByStatus_"
 
@@ -728,7 +728,7 @@ class ReportCaseCountView(views.APIView):
 
 
 class UserViewSet(HistoryViewSet):
-    # permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated,)
     serializer_class = UserSerializer
 
     def get_queryset(self):
