@@ -1,5 +1,5 @@
 from django.conf.urls import url, include
-from cbrsservices import views, receivers
+from cbrsservices import views
 from rest_framework.routers import DefaultRouter
 
 

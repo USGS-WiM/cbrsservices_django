@@ -1,13 +1,11 @@
 from datetime import date
 from django.core import validators
-from django.core.mail import send_mail, EmailMessage
+from django.core.mail import EmailMessage
 from django.db import models
 from django.contrib.auth.models import User
-from django.contrib import admin
 from django.conf import settings
 from localflavor.us.models import USStateField, USZipCodeField
 from simple_history.models import HistoricalRecords
-from simple_history.admin import SimpleHistoryAdmin
 
 
 # Users will be stored in the core User model instead of a custom model.
@@ -29,11 +27,11 @@ class HistoryModel(models.Model):
     """
 
     created_date = models.DateField(default=date.today, null=True, blank=True, db_index=True)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True, blank=True, db_index=True,
-                                   related_name='%(class)s_creator')
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
+                                   null=True, blank=True, db_index=True, related_name='%(class)s_creator')
     modified_date = models.DateField(auto_now=True, null=True, blank=True)
-    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True, blank=True, db_index=True,
-                                    related_name='%(class)s_modifier')
+    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
+                                    null=True, blank=True, db_index=True, related_name='%(class)s_modifier')
     history = HistoricalRecords(inherit=True)
 
     class Meta:
@@ -138,7 +136,8 @@ class Case(HistoryModel):
     final_letter_date = models.DateField(null=True, blank=True)
     close_date = models.DateField(null=True, blank=True)
     final_letter_recipient = models.CharField(max_length=255, blank=True)
-    analyst = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='analyst', null=True, blank=True)
+    analyst = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
+                                related_name='analyst', null=True, blank=True)
     analyst_signoff_date = models.DateField(null=True, blank=True)
     qc_reviewer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
                                     related_name='qc_reviewer', null=True, blank=True)
@@ -173,7 +172,6 @@ class CaseFile(HistoryModel):
 
     def casefile_location(self, instance, filename):
         """Returns a custom location for the case file, in a folder named for its case"""
-        # print(instance.uploader_id)
         if not instance.uploader_id:
             return 'casefiles/{0}/requester/{1}'.format(instance.case, filename)
         else:
@@ -331,7 +329,8 @@ class SystemUnit(HistoryModel):
     system_unit_number = models.CharField(max_length=16, unique=True)
     system_unit_name = models.CharField(max_length=255, blank=True)
     system_unit_type = models.ForeignKey('SystemUnitType', on_delete=models.PROTECT)
-    field_office = models.ForeignKey('FieldOffice', on_delete=models.PROTECT, related_name='system_units', null=True, blank=True)
+    field_office = models.ForeignKey('FieldOffice', on_delete=models.PROTECT,
+                                     related_name='system_units', null=True, blank=True)
     system_maps = models.ManyToManyField('SystemMap', through='SystemUnitMap', related_name='system_units')
 
     def __str__(self):

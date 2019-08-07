@@ -60,6 +60,7 @@ class ReportCasesByUnitCSVRenderer (PaginatedCSVRenderer):
         'hard_copy_map_reviewed': 'Hard Copy Map Reviewed'
     }
 
+
 class ReportCasesForUserCSVRenderer (PaginatedCSVRenderer):
     header = ['id', 'status', 'prohibition_date', 'cbrs_unit_string', 'request_date', 'final_letter_date', 'determination_string', 'street_address', 
         'tags', 'comments', 'case_number', 'case_reference', 'duplicate', 'property_string', 'map_number_string', 'cbrs_map_date', 'distance', 'fws_fo_received_date',
@@ -147,7 +148,7 @@ class DOCXRenderer(renderers.BaseRenderer):
     media_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     format = 'docx'
     render_style = 'binary'
-    document = None #This should be a docx object
+    document = None
 
     def render(self, data, media_type=None, renderer_context=None):
         return self.document
@@ -162,13 +163,13 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         DOC_LINE_SPACING = 1
 
         # case fields
-        id = str(data[0]['id'])
+        # id = str(data[0]['id'])
         case_reference = data[0]['case_reference'] or ""
         request_date = data[0]['request_date'] or ""
         if request_date:
             request_date = datetime.strptime(data[0]['request_date'], '%Y-%m-%d').strftime('%B %d, %Y').replace(" 0", " ")
         determination = data[0]['determination'] or ""
-        determination_string = data[0]['determination_string'] or ""
+        # determination_string = data[0]['determination_string'] or ""
         cbrs_unit = data[0]['cbrs_unit_string'] or ""
         system_unit_type = data[0]['system_unit_type'] or ""
         if system_unit_type == 'CBRS':
@@ -180,7 +181,6 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         cbrs_map_date = data[0]['cbrs_map_date'] or ""
         if cbrs_map_date:
             cbrs_map_date = datetime.strptime(data[0]['cbrs_map_date'], '%Y-%m-%d').strftime('%B %d, %Y').replace(" 0", " ")
-            print(cbrs_map_date)
         final_letter_recipient = data[0]['final_letter_recipient'] or ""
 
         # property fields
@@ -217,7 +217,6 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         requester_full_address = "\n" + requester_salutation + " " + requester_first_name + " " + requester_last_name + "\n"
         requester_full_address += requester_organization + "\n"
         requester_full_address += requester_street
-        print(requester_unit)
         if requester_unit:
             requester_full_address += ", " + requester_unit + "\n"
         else:
@@ -272,12 +271,11 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         opa_info1 = "The Coastal Barrier Improvement Act (Pub. L. 101-591; 42 U.S.C. § 4028) prohibits Federal flood insurance "
         opa_info2 = ", with an exception for structures that are used in a manner consistent with the purpose for which the area is protected (e.g., "
         opa_info2 += "park visitors center, park restroom facilities, etc.). "
-        if cbrs_unit:
-            is_opa = cbrs_unit.endswith('P')
+        is_opa = cbrs_unit.endswith('P') if cbrs_unit else False
         if determination == 1:
             details += "This property is within " + system_unit_type + " Unit " + cbrs_unit + " of the CBRS. "
             details += opa_info1 + "within OPAs" + opa_info2 if is_opa else su_info + ". "
-            details += "\n\nThe prohibition on Federal flood insurance for this property took effect on " +  prohibition_date + "."
+            details += "\n\nThe prohibition on Federal flood insurance for this property took effect on " + prohibition_date + "."
         elif determination == 2:
             details += "This property is not located within a System Unit or an OPA of the CBRS."
         elif determination == 3:
@@ -303,7 +301,7 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         else:
             details += "A determination has not been made."
         
-        if determination in [1,3]:
+        if determination in [1, 3]:
             details += " Federal flood insurance through the National Flood Insurance Program is available if the subject building was "
             details += "constructed (or permitted and under construction) before the flood insurance prohibition date, and has not been "
             details += "substantially improved or substantially damaged since. For more information about the restrictions on Federal "
@@ -405,7 +403,7 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         p10.font.name = DOC_FONT_TYPE
         p10.font.size = DOC_FONT_LARGE
 
-        #document.add_paragraph()
+        # document.add_paragraph()
 
         docx_buffer = BytesIO()
         document.save(docx_buffer)

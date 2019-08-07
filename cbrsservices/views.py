@@ -1,17 +1,12 @@
-import json
 from itertools import chain
 from datetime import datetime as dt
-from django.contrib.auth import authenticate, login, logout
-from django.db.models import Q, Count, Prefetch
-from django.db.models.expressions import RawSQL
-from rest_framework import views, viewsets, generics, permissions, authentication, status
+from django.db.models import Q
+from rest_framework import views, viewsets, generics, authentication
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework_extensions.cache.mixins import CacheResponseMixin
-from rest_framework_extensions.cache.mixins import ListCacheResponseMixin
-from rest_framework_csv.renderers import CSVRenderer
 from cbrsservices.serializers import *
 from cbrsservices.models import *
 from cbrsservices.permissions import *
@@ -51,10 +46,10 @@ class HistoryViewSet(viewsets.ModelViewSet):
     permission_classes = (IsActive,)
 
     def perform_create(self, serializer):
-        serializer.save() # issue is here, trying to remove
+        serializer.save(created_by=self.request.user, modified_by=self.request.user)
 
     def perform_update(self, serializer):
-        serializer.save()
+        serializer.save(modified_by=self.request.user)
 
 
 ######
@@ -65,8 +60,6 @@ class HistoryViewSet(viewsets.ModelViewSet):
 
 
 class CaseViewSet(HistoryViewSet):
-    # queryset = Case.objects.all()
-    # serializer_class = CaseSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
     @action(methods=['post'], detail=True)
@@ -272,14 +265,12 @@ class CaseViewSet(HistoryViewSet):
 
 
 class CaseFileViewSet(HistoryViewSet):
-    # queryset = CaseFile.objects.all()
     serializer_class = CaseFileSerializer
     permission_classes = (permissions.IsAuthenticated,)
     parser_classes = (MultiPartParser, FormParser,)
 
     # override the default create to include user information
     def perform_create(self, serializer):
-        # print(self.request.user)
 
         def get_user():
             if self.request.user.is_anonymous():
@@ -302,7 +293,6 @@ class CaseFileViewSet(HistoryViewSet):
 
 
 class PropertyViewSet(HistoryViewSet):
-    # queryset = Property.objects.all()
     serializer_class = PropertySerializer
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -341,7 +331,6 @@ class PropertyViewSet(HistoryViewSet):
 
 
 class RequesterViewSet(HistoryViewSet):
-    # queryset = Requester.objects.all()
     serializer_class = RequesterSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -403,7 +392,6 @@ class RequesterViewSet(HistoryViewSet):
 
 
 class CaseTagViewSet(HistoryViewSet):
-    # queryset = CaseTag.objects.all()
     serializer_class = CaseTagSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -418,7 +406,6 @@ class CaseTagViewSet(HistoryViewSet):
 
 
 class TagViewSet(HistoryViewSet):
-    # queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -440,10 +427,8 @@ class TagViewSet(HistoryViewSet):
 
 
 class CommentViewSet(HistoryViewSet):
-    # queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = (permissions.IsAuthenticated,)
-    permission_classes = (IsOwnerOrReadOnly,)
 
     # override the default queryset to allow filtering by URL arguments
     def get_queryset(self):
@@ -485,22 +470,16 @@ class SystemUnitViewSet(CacheResponseMixin, HistoryViewSet):
                 Q(field_office__field_office_number__icontains=freetext) |
                 Q(system_unit_type__unit_type__icontains=freetext) |
                 Q(field_office__field_office_name__icontains=freetext))
-        #print(queryset.values())
         return queryset
 
+
 class SystemUnitTypeViewSet(CacheResponseMixin, HistoryViewSet):
-    # queryset = SystemUnit.objects.all()
+    queryset = SystemUnitType.objects.all()
     serializer_class = SystemUnitTypeSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
-    # override the default queryset to allow filtering by URL arguments
-    def get_queryset(self):
-        queryset = SystemUnitType.objects.all()
-        return queryset
-
 
 class SystemUnitProhibitionDateViewSet(HistoryViewSet):
-    # queryset = SystemUnitProhibitionDate.objects.all()
     serializer_class = SystemUnitProhibitionDateSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -513,16 +492,59 @@ class SystemUnitProhibitionDateViewSet(HistoryViewSet):
             queryset = queryset.filter(system_unit_id__exact=unit_id)
         # filter by freetext, case-insensitive contain
         freetext = self.request.query_params.get('freetext', None)
-        if freetext is not None: # trying to compare freetext to a formatted prohibition date, not working
-            queryset = queryset.filter(
-                Q(system_unit__id__icontains=freetext) |
-                Q(system_unit__system_unit_number__icontains=freetext) |
-                Q(prohibition_date__icontains=freetext))
+        if freetext is not None:  # trying to compare freetext to a formatted prohibition date, not working
+            if '/' in freetext:
+                # only perform date comparisons if all date parts are integers
+                isinteger = True
+                date_parts = freetext.strip('/').split('/')
+                for date_part in date_parts:
+                    if not date_part.isnumeric() or not float(date_part).is_integer():
+                        isinteger = False
+                if isinteger:
+                    counter = len(date_parts)
+                    # month
+                    if counter == 1:
+                        month_places = len(date_parts[0])
+                        if month_places <= 2:
+                            queryset = queryset.filter(prohibition_date__month=int(date_parts[0]))
+                        else:
+                            queryset = SystemUnitProhibitionDate.objects.none()
+                    # day
+                    elif counter == 2:
+                        day_places = len(date_parts[1])
+                        if day_places <= 2:
+                            queryset = queryset.filter(
+                                prohibition_date__month=int(date_parts[0]), prohibition_date__day=int(date_parts[1]))
+                        else:
+                            queryset = SystemUnitProhibitionDate.objects.none()
+                    # year
+                    elif counter == 3:
+                        year_places = len(date_parts[2])
+                        year_int = int(date_parts[2])
+                        year_part = None
+                        if year_places == 1:
+                            year_part = 2000 + year_int
+                        elif year_places == 2:
+                            year_part = 1900 + year_int if 99 >= year_int >= 83 else 2000 + year_int
+                        elif year_places == 4:
+                            year_part = year_int
+                        if year_part:
+                            # cannot filter on a three digit year
+                            queryset = queryset.filter(
+                                prohibition_date__month=int(date_parts[0]), prohibition_date__day=int(date_parts[1]),
+                                prohibition_date__year=year_part)
+                        else:
+                            queryset = SystemUnitProhibitionDate.objects.none()
+                    else:
+                        queryset = SystemUnitProhibitionDate.objects.none()
+                else:
+                    queryset = SystemUnitProhibitionDate.objects.none()
+            else:
+                queryset = queryset.filter(system_unit__system_unit_number__icontains=freetext)
         return queryset
 
 
 class SystemUnitMapViewSet(HistoryViewSet):
-    # queryset = SystemUnitMap.objects.all()
     serializer_class = SystemUnitMapSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -541,7 +563,6 @@ class SystemUnitMapViewSet(HistoryViewSet):
 
 
 class SystemMapViewSet(HistoryViewSet):
-    # queryset = SystemMap.objects.all()
     serializer_class = SystemMapSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -635,15 +656,14 @@ class ReportCaseView(generics.ListAPIView):
     # see https://github.com/mjumbewu/django-rest-framework-csv/issues/15
     def finalize_response(self, request, response, *args, **kwargs):
         response = super(generics.ListAPIView, self).finalize_response(request, response, *args, **kwargs)
-        ## join list of tag numbers
+        # join list of tag numbers
         for item in response.data.get('results'):
             for key, value in item.items():
-                if isinstance(item[key], list): # can do this better
+                if isinstance(item[key], list):  # can do this better
                     item[key] = ','.join(str(v) for v in value)
         if self.request.accepted_renderer.format == 'csv':
             self.filename += dt.now().strftime("%Y") + '-' + dt.now().strftime("%m") + '-' + dt.now().strftime(
                 "%d") + '.csv'
-            print(self.filename)
             response['Content-Disposition'] = "attachment; filename=%s" % self.filename
             response['Access-Control-Expose-Headers'] = 'Content-Disposition'
         return response
@@ -732,41 +752,47 @@ class UserViewSet(HistoryViewSet):
     serializer_class = UserSerializer
 
     def get_queryset(self):
-        # do not return the admin and public users
-        queryset = User.objects.all().exclude(id__in=[1, 2])
-        # filter by username, exact
-        username = self.request.query_params.get('username', None)
-        if username is not None:
-            queryset = queryset.filter(username__exact=username)
-        # filter by is_active, exact
-        is_active = self.request.query_params.get('is_active', None)
-        if is_active is not None:
-            queryset = queryset.filter(is_active__exact=is_active)
-        # filter by current and former active users
-        used_users = self.request.query_params.get('used_users', None)
-        if used_users is not None:
-            active_users = queryset.filter(is_active__exact=True)
-            analysts = queryset.filter(analyst__isnull=False).distinct()
-            qc_reviewers = queryset.filter(qc_reviewer__isnull=False).distinct()
-            fws_reviewers = queryset.filter(fws_reviewer__isnull=False).distinct()
-            used_users_chain = list(chain(active_users, analysts, qc_reviewers, fws_reviewers))
-            used_users_set = set(used_users_chain)
-            used_users_ids = []
-            for used_user in used_users_set:
-                used_users_ids.append(used_user.id)
-            queryset = queryset.filter(id__in=used_users_ids).extra(order_by=['-is_active', 'username'])
-        # filter by freetext, case-insensitive contain
-        freetext = self.request.query_params.get('freetext', None)
-        if freetext is not None:
-            queryset = queryset.filter(
-                Q(first_name__icontains=freetext) |
-                Q(last_name__icontains=freetext) |
-                Q(email__icontains=freetext) |
-                Q(is_active__icontains=freetext) |
-                Q(is_superuser__icontains=freetext) |
-                Q(is_staff__icontains=freetext) |
-                Q(username__icontains=freetext))
-
+        if self.request:
+            user = self.request.user
+        else:
+            user = None
+        if not user or not user.is_active:
+            queryset = User.objects.none()
+        else:
+            # do not return the admin and public users
+            queryset = User.objects.all().exclude(id__in=[1, 2])
+            # filter by username, exact
+            username = self.request.query_params.get('username', None)
+            if username is not None:
+                queryset = queryset.filter(username__exact=username)
+            # filter by is_active, exact
+            is_active = self.request.query_params.get('is_active', None)
+            if is_active is not None:
+                queryset = queryset.filter(is_active__exact=is_active)
+            # filter by current and former active users
+            used_users = self.request.query_params.get('used_users', None)
+            if used_users is not None:
+                active_users = queryset.filter(is_active__exact=True)
+                analysts = queryset.filter(analyst__isnull=False).distinct()
+                qc_reviewers = queryset.filter(qc_reviewer__isnull=False).distinct()
+                fws_reviewers = queryset.filter(fws_reviewer__isnull=False).distinct()
+                used_users_chain = list(chain(active_users, analysts, qc_reviewers, fws_reviewers))
+                used_users_set = set(used_users_chain)
+                used_users_ids = []
+                for used_user in used_users_set:
+                    used_users_ids.append(used_user.id)
+                queryset = queryset.filter(id__in=used_users_ids).extra(order_by=['-is_active', 'username'])
+            # filter by freetext, case-insensitive contain
+            freetext = self.request.query_params.get('freetext', None)
+            if freetext is not None:
+                queryset = queryset.filter(
+                    Q(first_name__icontains=freetext) |
+                    Q(last_name__icontains=freetext) |
+                    Q(email__icontains=freetext) |
+                    Q(is_active__icontains=freetext) |
+                    Q(is_superuser__icontains=freetext) |
+                    Q(is_staff__icontains=freetext) |
+                    Q(username__icontains=freetext))
         return queryset
 
 
@@ -776,36 +802,3 @@ class AuthView(views.APIView):
 
     def post(self, request):
         return Response(self.serializer_class(request.user).data)
-
-
-# class UserLoginView(views.APIView):
-#     def post(self, request):
-#         username = request.POST['username']
-#         password = request.POST['password']
-#         user = authenticate(username=username, password=password)
-#
-#         if user is not None:
-#             if user.is_active:
-#                 login(request, user)
-#                 #logger.info("Logged In")
-#                 data = UserSerializer(user).data
-#                 return Response(data, status=status.HTTP_200_OK)
-#             else:
-#                 #logger.info("Account is disabled: {0}".format(username))
-#                 data = json.dumps({"status": "Unauthorized", "message": "Your account is disabled."})
-#                 return Response(data, status=status.HTTP_401_UNAUTHORIZED)
-#
-#         else:
-#             #logger.info("Invalid login details: {0}, {1}".format(username, password))
-#             data = json.dumps({"status": "Unauthorized", "message": "Invalid login details supplied."})
-#             return Response(data, status=status.HTTP_401_UNAUTHORIZED)
-#
-#
-# class UserLogoutView(views.APIView):
-#     permission_classes = (permissions.IsAuthenticated,)
-#
-#     def post(self, request):
-#         logout(request)
-#         #logger.info("Logged Out")
-#
-#         return Response({}, status=status.HTTP_204_NO_CONTENT)

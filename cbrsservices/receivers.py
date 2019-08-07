@@ -1,17 +1,16 @@
 import os
 import hashlib
 import base64
-from django.core.mail import send_mail, EmailMessage
-from django.core.exceptions import ValidationError
+from django.core.mail import EmailMessage
 from django.dispatch import receiver
 from django.db.models.signals import post_save, pre_delete, post_delete
 from cbrsservices import models
 
 
-def _get_hash(id):
+def _get_hash(pk):
     """Returns a hash of a portion of the string of the id of the record"""
     algorithm = "sha256"
-    value = str(id)
+    value = str(pk)
     salt = "CBRS"
     # keylength = random.randint(10000, 99999)
     keylength = 99999
@@ -33,19 +32,19 @@ def case_post_save(sender, **kwargs):
         case.case_reference = _get_hash(case.id)
         case.save()
 
-        # construct and send the confirmation email
-        subject = "Coastal Barrier Resources Act Determination Request Received"
-        body = "Dear Requester,\r\n\r\nThe U.S. Fish and Wildlife Services has received your request."
-        body += "\r\nThe Reference Number is: " + case.case_reference
-        from_address = local_email_address
-        to_addresses_list = [case.requester.email, ]
-        bcc_addresses_list = other_cbrs_email_addresses
-        reply_to_list = [cbrs_email_address, ]
-        headers = None  # {'Message-ID': 'foo'}
-        # send_mail(subject, message, from_address, to_addresses_list, fail_silently=False)
-        email = EmailMessage(subject, body, from_address, to_addresses_list, bcc_addresses_list,
-                             reply_to=reply_to_list, headers=headers)
-        #email.send(fail_silently=False)
+        # # construct and send the confirmation email
+        # subject = "Coastal Barrier Resources Act Determination Request Received"
+        # body = "Dear Requester,\r\n\r\nThe U.S. Fish and Wildlife Services has received your request."
+        # body += "\r\nThe Reference Number is: " + case.case_reference
+        # from_address = local_email_address
+        # to_addresses_list = [case.requester.email, ]
+        # bcc_addresses_list = other_cbrs_email_addresses
+        # reply_to_list = [cbrs_email_address, ]
+        # headers = None  # {'Message-ID': 'foo'}
+        # # send_mail(subject, message, from_address, to_addresses_list, fail_silently=False)
+        # email = EmailMessage(subject, body, from_address, to_addresses_list, bcc_addresses_list,
+        #                      reply_to=reply_to_list, headers=headers)
+        # # email.send(fail_silently=False)
 
     # elif case.final_letter_date is not None:
     #
@@ -68,7 +67,7 @@ def case_post_save(sender, **kwargs):
     #     # send_mail(subject, message, from_address, to_addresses_list, fail_silently=False)
     #     email = EmailMessage(subject, body, from_address, to_addresses_list, bcc_addresses_list,
     #                          reply_to=reply_to_list, headers=headers, attachments=attachments)
-    #     #email.send(fail_silently=False)
+    #     # email.send(fail_silently=False)
 
 
 # listen for new or updated system map instances, then toggle the 'effective' value on all system maps with same name

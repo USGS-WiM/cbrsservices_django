@@ -6,7 +6,6 @@ from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 from rest_framework import serializers
 from cbrsservices.models import *
-from datetime import datetime
 
 
 ######
@@ -144,7 +143,8 @@ class WorkbenchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Case
         fields = ('id', 'case_reference', 'status', 'request_date', 'property_string', 'cbrs_unit_string', 'distance',
-        'analyst_string', 'qc_reviewer_string', 'priority', 'on_hold', 'invalid', 'duplicate', 'tags', 'hard_copy_map_reviewed')
+                  'analyst_string', 'qc_reviewer_string', 'priority', 'on_hold', 'invalid', 'duplicate', 'tags',
+                  'hard_copy_map_reviewed')
 
 
 class LetterSerializer(serializers.ModelSerializer):
@@ -262,8 +262,10 @@ class SystemUnitSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SystemUnit
-        fields = ('id', 'system_unit_number', 'system_unit_name', 'system_unit_type', 'system_unit_type_string', 'field_office', 'system_maps',)
+        fields = ('id', 'system_unit_number', 'system_unit_name', 'system_unit_type', 'system_unit_type_string',
+                  'field_office', 'system_maps',)
         read_only_fields = ('system_maps',)
+
 
 class SystemUnitTypeSerializer(serializers.ModelSerializer):
 
@@ -341,11 +343,14 @@ class ReportCasesByUnitSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ReportCase
-        fields = ('id', 'case_reference', 'status', 'prohibition_date', 'cbrs_unit_string', 'request_date', 'final_letter_date',
-                  'property_string', 'determination_string', 'street_address', 'duplicate', 'tags', 'comments', 'case_number', 'case_reference',
-                  'duplicate', 'property', 'map_number_string', 'cbrs_map_date', 'distance', 'fws_fo_received_date', 'fws_hq_received_date', 'close_date',
-                  'final_letter_recipient', 'analyst_string', 'analyst_signoff_date', 'qc_reviewer_string', 'qc_reviewer_signoff_date', 'priority',
-                  'on_hold', 'invalid', 'casefiles', 'created_by', 'created_by_string', 'modified_by_string')
+        fields = ('id', 'case_reference', 'status', 'prohibition_date', 'cbrs_unit_string', 'request_date',
+                  'final_letter_date', 'property_string', 'determination_string', 'street_address', 'duplicate', 'tags',
+                  'comments', 'case_number', 'case_reference', 'duplicate', 'property', 'map_number_string',
+                  'cbrs_map_date', 'distance', 'fws_fo_received_date', 'fws_hq_received_date', 'close_date',
+                  'final_letter_recipient', 'analyst_string', 'analyst_signoff_date', 'qc_reviewer_string',
+                  'qc_reviewer_signoff_date', 'priority', 'on_hold', 'invalid', 'casefiles',
+                  'created_by', 'created_by_string', 'modified_by_string')
+
 
 class ReportCasesForUserSerializer(serializers.ModelSerializer):
     def get_street_address(self, obj):
@@ -368,11 +373,13 @@ class ReportCasesForUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ReportCase
-        fields = ('id', 'case_reference', 'status', 'prohibition_date', 'cbrs_unit_string', 'request_date', 'final_letter_date',
-                  'property_string', 'determination_string', 'street_address', 'duplicate', 'tags', 'comments', 'case_number', 'case_reference',
-                  'duplicate', 'property', 'map_number_string', 'cbrs_map_date', 'distance', 'fws_fo_received_date', 'fws_hq_received_date', 'close_date',
-                  'final_letter_recipient', 'analyst_string', 'analyst_signoff_date', 'qc_reviewer_string', 'qc_reviewer_signoff_date', 'priority',
-                  'on_hold', 'invalid', 'casefiles', 'created_by', 'created_by_string', 'modified_by_string')
+        fields = ('id', 'case_reference', 'status', 'prohibition_date', 'cbrs_unit_string', 'request_date',
+                  'final_letter_date', 'property_string', 'determination_string', 'street_address', 'duplicate', 'tags',
+                  'comments', 'case_number', 'case_reference', 'duplicate', 'property', 'map_number_string',
+                  'cbrs_map_date', 'distance', 'fws_fo_received_date', 'fws_hq_received_date', 'close_date',
+                  'final_letter_recipient', 'analyst_string', 'analyst_signoff_date', 'qc_reviewer_string',
+                  'qc_reviewer_signoff_date', 'priority', 'on_hold', 'invalid', 'casefiles',
+                  'created_by', 'created_by_string', 'modified_by_string')
 
 
 class ReportDaysToResolutionSerializer(serializers.ModelSerializer):
@@ -421,31 +428,41 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context['request'].user
-        if not user.is_staff:
+        # only a superuser or staff can create users
+        if not (user.is_superuser or user.is_staff):
             raise serializers.ValidationError("you are not authorized to create users")
+        # only a superuser can create superusers
+        if not user.is_superuser and 'is_superuser' in validated_data and validated_data['is_superuser'] is True:
+            raise serializers.ValidationError("you are not authorized to create superusers")
+        # if is_superuser is not included, set it to False
+        if 'is_superuser' not in validated_data:
+            validated_data['is_superuser'] = False
         password = validated_data.pop('password', None)
-        instance = self.Meta.model(**validated_data) #issue is here
+        new_user = User.objects.create(**validated_data)
         if password is not None:
-            instance.set_password(password)
-        instance.save()
-        return instance
+            new_user.set_password(password)
+        new_user.save()
+        return new_user
 
     def update(self, instance, validated_data):
         user = self.context['request'].user
-        if not user.is_staff:
+        if not (user.is_superuser or user.is_staff):
             if not user.id == instance.id:
                 raise serializers.ValidationError("you are not authorized to make changes to this user")
         for attr, value in validated_data.items():
             if attr == 'password':
                 instance.set_password(value)
+            # only a superuser can change a user's superuser status
+            elif attr == 'is_superuser' and not user.is_superuser:
+                pass
             else:
                 setattr(instance, attr, value)
         instance.save()
         return instance
 
     password = serializers.CharField(write_only=True, required=False)
+    is_superuser = serializers.CharField(write_only=True, required=False)
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'first_name', 'last_name', 'email', 'password',
-                  'groups', 'user_permissions', 'is_superuser', 'is_staff', 'is_active',)
+        fields = ('id', 'username', 'first_name', 'last_name', 'email', 'is_superuser', 'is_staff', 'is_active',)
