@@ -46,10 +46,16 @@ class HistoryViewSet(viewsets.ModelViewSet):
     permission_classes = (IsActive,)
 
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user, modified_by=self.request.user)
+        if self.basename != 'users':
+            serializer.save(created_by=self.request.user, modified_by=self.request.user)
+        else:
+            serializer.save()
 
     def perform_update(self, serializer):
-        serializer.save(modified_by=self.request.user)
+        if self.basename != 'users':
+            serializer.save(modified_by=self.request.user)
+        else:
+            serializer.save()
 
 
 ######
