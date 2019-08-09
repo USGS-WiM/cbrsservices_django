@@ -21,10 +21,12 @@ class PaginatedCSVRenderer (CSVRenderer):
 
 
 class ReportCasesByUnitCSVRenderer (PaginatedCSVRenderer):
-    header = ['id', 'status', 'prohibition_date', 'cbrs_unit_string', 'request_date', 'final_letter_date', 'determination_string', 'street_address', 
-        'tags', 'comments', 'case_number', 'case_reference', 'duplicate', 'property_string', 'map_number_string', 'cbrs_map_date', 'distance', 'fws_fo_received_date',
-        'fws_hq_received_date', 'close_date', 'final_letter_recipient', 'analyst_string', 'analyst_signoff_date', 'qc_reviewer_string', 'qc_reviewer_signoff_date',
-        'priority', 'on_hold', 'invalid', 'casefiles', 'created_by_string', 'modified_by_string', 'hard_copy_map_reviewed']
+    header = ['id', 'status', 'prohibition_date', 'cbrs_unit_string', 'request_date', 'final_letter_date',
+              'determination_string', 'street_address', 'tags', 'comments', 'case_number', 'case_reference',
+              'duplicate', 'property_string', 'map_number_string', 'cbrs_map_date', 'distance', 'fws_fo_received_date',
+              'fws_hq_received_date', 'close_date', 'final_letter_recipient', 'analyst_string', 'analyst_signoff_date',
+              'qc_reviewer_string', 'qc_reviewer_signoff_date', 'priority', 'on_hold', 'invalid', 'casefiles',
+              'created_by_string', 'modified_by_string', 'hard_copy_map_reviewed']
     labels = {
         'id': 'Case ID',
         'status': 'Status',
@@ -62,10 +64,12 @@ class ReportCasesByUnitCSVRenderer (PaginatedCSVRenderer):
 
 
 class ReportCasesForUserCSVRenderer (PaginatedCSVRenderer):
-    header = ['id', 'status', 'prohibition_date', 'cbrs_unit_string', 'request_date', 'final_letter_date', 'determination_string', 'street_address', 
-        'tags', 'comments', 'case_number', 'case_reference', 'duplicate', 'property_string', 'map_number_string', 'cbrs_map_date', 'distance', 'fws_fo_received_date',
-        'fws_hq_received_date', 'close_date', 'final_letter_recipient', 'analyst_string', 'analyst_signoff_date', 'qc_reviewer_string', 'qc_reviewer_signoff_date',
-        'priority', 'on_hold', 'invalid', 'casefiles', 'created_by_string', 'modified_by_string', 'hard_copy_map_reviewed']
+    header = ['id', 'status', 'prohibition_date', 'cbrs_unit_string', 'request_date', 'final_letter_date',
+              'determination_string', 'street_address', 'tags', 'comments', 'case_number', 'case_reference',
+              'duplicate', 'property_string', 'map_number_string', 'cbrs_map_date', 'distance', 'fws_fo_received_date',
+              'fws_hq_received_date', 'close_date', 'final_letter_recipient', 'analyst_string', 'analyst_signoff_date',
+              'qc_reviewer_string', 'qc_reviewer_signoff_date', 'priority', 'on_hold', 'invalid', 'casefiles',
+              'created_by_string', 'modified_by_string', 'hard_copy_map_reviewed']
     labels = {
         'id': 'Case ID',
         'status': 'Status',
@@ -162,50 +166,54 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         DOC_FONT_LARGE = Pt(12)
         DOC_LINE_SPACING = 1
 
+        case = data[0]
+
         # case fields
-        # id = str(data[0]['id'])
-        case_reference = data[0]['case_reference'] or ""
-        request_date = data[0]['request_date'] or ""
+        # id = str(case['id'])
+        case_reference = case['case_reference'] if 'case_reference' in case else ""
+        request_date = case['request_date'] if 'request_date' in case else ""
         if request_date:
-            request_date = datetime.strptime(data[0]['request_date'], '%Y-%m-%d').strftime('%B %d, %Y').replace(" 0", " ")
-        determination = data[0]['determination'] or ""
-        # determination_string = data[0]['determination_string'] or ""
-        cbrs_unit = data[0]['cbrs_unit_string'] or ""
-        system_unit_type = data[0]['system_unit_type'] or ""
+            request_date = datetime.strptime(case['request_date'], '%Y-%m-%d').strftime('%B %d, %Y').replace(" 0", " ")
+        determination = case['determination'] if 'determination' in case else ""
+        # determination_string = case['determination_string'] if 'determination_string' in case else ""
+        cbrs_unit = case['cbrs_unit_string'] if 'cbrs_unit_string' in case else ""
+        system_unit_type = case['system_unit_type'] if 'system_unit_type' in case else ""
         if system_unit_type == 'CBRS':
             system_unit_type = 'System'
-        prohibition_date = data[0]['prohibition_date'] or ""
+        prohibition_date = case['prohibition_date'] if 'prohibition_date' in case else ""
         if prohibition_date:
-            prohibition_date = datetime.strptime(data[0]['prohibition_date'], '%Y-%m-%d').strftime('%B %d, %Y').replace(" 0", " ")
-        map_number_string = str(data[0]['map_number_string']) or ""
-        cbrs_map_date = data[0]['cbrs_map_date'] or ""
+            prohibition_date = datetime.strptime(
+                case['prohibition_date'], '%Y-%m-%d').strftime('%B %d, %Y').replace(" 0", " ")
+        map_number_string = str(case['map_number_string']) if 'map_number_string' in case else ""
+        cbrs_map_date = case['cbrs_map_date'] if 'cbrs_map_date' in case else ""
         if cbrs_map_date:
-            cbrs_map_date = datetime.strptime(data[0]['cbrs_map_date'], '%Y-%m-%d').strftime('%B %d, %Y').replace(" 0", " ")
-        final_letter_recipient = data[0]['final_letter_recipient'] or ""
+            cbrs_map_date = datetime.strptime(
+                case['cbrs_map_date'], '%Y-%m-%d').strftime('%B %d, %Y').replace(" 0", " ")
+        final_letter_recipient = case['final_letter_recipient'] if 'final_letter_recipient' in case else ""
 
         # property fields
-        property_legal_description = data[0]['legal_description'] or ""
-        property_subdivision = data[0]['subdivision'] or ""
-        property_policy_number = data[0]['policy_number'] or ""
-        property_street = data[0]['property_street'] or ""
-        property_unit = data[0]['property_unit'] or ""
-        property_city = data[0]['property_city'] or ""
-        property_state = data[0]['property_state'] or ""
-        property_zipcode = data[0]['property_zipcode'] or ""
+        property_legal_description = case['legal_description'] if 'legal_description' in case else ""
+        property_subdivision = case['subdivision'] if 'subdivision' in case else ""
+        property_policy_number = case['policy_number'] if 'policy_number' in case else ""
+        property_street = case['property_street'] if 'property_street' in case else ""
+        property_unit = case['property_unit'] if 'property_unit' in case else ""
+        property_city = case['property_city'] if 'property_city' in case else ""
+        property_state = case['property_state'] if 'property_state' in case else ""
+        property_zipcode = case['property_zipcode'] if 'property_zipcode' in case else ""
 
         if property_state != "":
             property_state = str(next(name for abbrev, name in us_states.US_STATES if abbrev == property_state))
 
         # requester fields
-        requester_salutation = data[0]['salutation'] or ""
-        requester_first_name = data[0]['first_name'] or ""
-        requester_last_name = data[0]['last_name'] or ""
-        requester_organization = data[0]['requester_organization'] or ""
-        requester_street = data[0]['requester_street'] or ""
-        requester_unit = data[0]['requester_unit'] or ""
-        requester_city = data[0]['requester_city'] or ""
-        requester_state = data[0]['requester_state'] or ""
-        requester_zipcode = data[0]['requester_zipcode'] or ""
+        requester_salutation = case['salutation'] if 'salutation' in case else ""
+        requester_first_name = case['first_name'] if 'first_name' in case else ""
+        requester_last_name = case['last_name'] if 'last_name' in case else ""
+        requester_organization = case['requester_organization'] if 'requester_organization' in case else ""
+        requester_street = case['requester_street'] if 'requester_street' in case else ""
+        requester_unit = case['requester_unit'] if 'requester_unit' in case else ""
+        requester_city = case['requester_city'] if 'requester_city' in case else ""
+        requester_state = case['requester_state'] if 'requester_state' in case else ""
+        requester_zipcode = case['requester_zipcode'] if 'requester_zipcode' in case else ""
 
         if requester_state != "":
             requester_state = str(next(name for abbrev, name in us_states.US_STATES if abbrev == requester_state))
@@ -214,8 +222,8 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
 
         referal = "In Reply Refer To\nFWS/DBTS-BGMTS"
 
-        requester_full_address = "\n" + requester_salutation + " " + requester_first_name + " " + requester_last_name + "\n"
-        requester_full_address += requester_organization + "\n"
+        requester_full_address = "\n" + requester_salutation + " " + requester_first_name + " " + requester_last_name
+        requester_full_address += "\n" + requester_organization + "\n"
         requester_full_address += requester_street
         if requester_unit:
             requester_full_address += ", " + requester_unit + "\n"
@@ -241,7 +249,8 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         intro = "The U.S. Fish and Wildlife Service is responsible for maintaining the John H. Chafee Coastal Barrier "
         intro += "Resources System (CBRS) maps. We have reviewed your request dated " + request_date + ", "
         intro += "Case Reference # " + case_reference + ", for a determination as to whether the following property "
-        intro += "is within a System Unit or an Otherwise Protected Area (OPA) of the John H. Chafee Coastal Barrier Resources System (CBRS)."
+        intro += "is within a System Unit or an Otherwise Protected Area (OPA) of "
+        intro += "the John H. Chafee Coastal Barrier Resources System (CBRS)."
         if property_policy_number != "":
             intro += " The flood insurance policy number for this request is " + property_policy_number + "."
 
@@ -266,47 +275,60 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         bold = ""
 
         # 1:In, 2:Out, 3:Partially In; Structure In, 4:Partially In; Structure Out, 5:Partially In/No Structure
-        su_info = "The Coastal Barrier Resources Act (Pub. L. 97-348) and subsequent amendments (16 U.S.C. § 3501 et seq.) prohibit most Federal funding and "
-        su_info += "financial assistance within System Units, including flood insurance"
-        opa_info1 = "The Coastal Barrier Improvement Act (Pub. L. 101-591; 42 U.S.C. § 4028) prohibits Federal flood insurance "
-        opa_info2 = ", with an exception for structures that are used in a manner consistent with the purpose for which the area is protected (e.g., "
-        opa_info2 += "park visitors center, park restroom facilities, etc.). "
+        su_info = "The Coastal Barrier Resources Act (Pub. L. 97-348) and subsequent amendments "
+        su_info += "(16 U.S.C. § 3501 et seq.) prohibit most Federal funding and financial assistance "
+        opa_info1 = "within System Units, including flood insurance. The Coastal Barrier Improvement Act "
+        opa_info2 = "(Pub. L. 101-591; 42 U.S.C. § 4028) prohibits Federal flood insurance, "
+        opa_info2 += "with an exception for structures that are used in a manner consistent with the purpose "
+        opa_info2 += "for which the area is protected (e.g., park visitors center, park restroom facilities, etc.). "
         is_opa = cbrs_unit.endswith('P') if cbrs_unit else False
         if determination == 1:
             details += "This property is within " + system_unit_type + " Unit " + cbrs_unit + " of the CBRS. "
             details += opa_info1 + "within OPAs" + opa_info2 if is_opa else su_info + ". "
-            details += "\n\nThe prohibition on Federal flood insurance for this property took effect on " + prohibition_date + "."
+            details += "\n\nThe prohibition on Federal flood insurance for this property took effect on "
+            details += prohibition_date + "."
         elif determination == 2:
             details += "This property is not located within a System Unit or an OPA of the CBRS."
         elif determination == 3:
             details += "This property is partially within " + system_unit_type + " Unit " + cbrs_unit + " of the CBRS. "
             details += "The existing structure on the property is within Unit " + cbrs_unit + ". "
             details += opa_info1 + "for new construction" + opa_info2 if is_opa else su_info + ". "
-            details += "\n\nThe prohibition on Federal flood insurance for the portion of this property within the CBRS took effect on " + prohibition_date + "."
+            details += "\n\nThe prohibition on Federal flood insurance for the portion of this property "
+            details += "within the CBRS took effect on " + prohibition_date + "."
         elif determination == 4:
-            details += "This property is partially within " + system_unit_type + " Unit " + cbrs_unit + " of the CBRS. Only the portion of the property within Unit "
+            details += "This property is partially within " + system_unit_type + " Unit " + cbrs_unit
+            details += " of the CBRS. Only the portion of the property within Unit "
             if is_opa:
-                details += cbrs_unit + " is affected by the Coastal Barrier Improvement Act (CBIA) (Pub. L. 101-591; 42 § U.S.C. 4028). The CBIA prohibits Federal "
-                details += "flood insurance within OPAs for new construction, with an exception for structures that are used in a manner consistent with the purpose "
-                details += "for which the area is protected (e.g., park visitors center, park restroom facilities, etc.). However, "
-                bold = "the existing structure on the property is not within Unit " + cbrs_unit + " and is therefore not affected by the CBIA restriction on Federal flood insurance."
+                details += cbrs_unit + " is affected by the Coastal Barrier Improvement Act (CBIA) "
+                details += "(Pub. L. 101-591; 42 § U.S.C. 4028). The CBIA prohibits Federal flood insurance "
+                details += "within OPAs for new construction, with an exception for structures that are used "
+                details += "in a manner consistent with the purpose for which the area is protected "
+                details += "(e.g., park visitors center, park restroom facilities, etc.). However, "
+                bold = "the existing structure on the property is not within Unit " + cbrs_unit
+                bold += " and is therefore not affected by the CBIA restriction on Federal flood insurance."
             else:
-                details += cbrs_unit + "is affected by the Coastal Barrier Resources Act (CBRA) (Pub. L. 97-348). CBRA and subsequent amendments (16 U.S.C. § 3501 et "
-                details += "seq.) prohibit most Federal funding and financial assistance within System Units, including flood insurance. However, "
-                bold = "the existing structure on the property is not within Unit " + cbrs_unit + " and is therefore not affected by the CBRA restriction on Federal flood insurance."
+                details += cbrs_unit + "is affected by the Coastal Barrier Resources Act (CBRA) (Pub. L. 97-348). "
+                details += "CBRA and subsequent amendments (16 U.S.C. § 3501 et seq.) prohibit most Federal funding "
+                details += "and financial assistance within System Units, including flood insurance. However, "
+                bold = "the existing structure on the property is not within Unit " + cbrs_unit
+                bold += " and is therefore not affected by the CBRA restriction on Federal flood insurance."
         elif determination == 5:
-            details += "This property is partially within " + system_unit_type + " Unit " + cbrs_unit + " of the CBRS. There is no existing structure "
-            details += "on the property. For the portion of the property within " + system_unit_type + " Unit " + cbrs_unit + ", "
-            details += opa_info1[0].lower() + opa_info1[1:] + " within OPAs" + opa_info2 if is_opa else su_info[0].lower() + su_info[1:] + " for new construction."
+            details += "This property is partially within " + system_unit_type + " Unit " + cbrs_unit
+            details += " of the CBRS. There is no existing structure on the property. "
+            details += "For the portion of the property within " + system_unit_type + " Unit " + cbrs_unit + ", "
+            details += opa_info1[0].lower() + opa_info1[1:] + " within OPAs"
+            details += opa_info2 if is_opa else su_info[0].lower() + su_info[1:] + " for new construction."
         else:
             details += "A determination has not been made."
         
         if determination in [1, 3]:
-            details += " Federal flood insurance through the National Flood Insurance Program is available if the subject building was "
-            details += "constructed (or permitted and under construction) before the flood insurance prohibition date, and has not been "
-            details += "substantially improved or substantially damaged since. For more information about the restrictions on Federal "
-            details += "flood insurance, please refer to the Federal Emergency Management Agency’s (FEMA) regulations in Title 44 Part "
-            details += "71 of the Code of Federal Regulations and FEMA’s Flood Insurance Manual: https://www.fema.gov/flood-insurance-manual."
+            details += " Federal flood insurance through the National Flood Insurance Program is available "
+            details += "if the subject building was constructed (or permitted and under construction) before "
+            details += "the flood insurance prohibition date, and has not been substantially improved or "
+            details += "substantially damaged since. For more information about the restrictions on Federal "
+            details += "flood insurance, please refer to the Federal Emergency Management Agency’s (FEMA) "
+            details += "regulations in Title 44 Part 71 of the Code of Federal Regulations "
+            details += "and FEMA’s Flood Insurance Manual: https://www.fema.gov/flood-insurance-manual."
  
         closing = "We hope this information is helpful. The CBRS maps and additional information can be found "
         closing += " on our website at https://www.fws.gov/cbra/. If you have any additional questions, please contact"

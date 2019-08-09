@@ -529,7 +529,8 @@ class SystemUnitProhibitionDateViewSet(HistoryViewSet):
                             day_places = len(date_parts[1])
                             if day_places <= 2:
                                 queryset = queryset.filter(
-                                    prohibition_date__month=int(date_parts[0]), prohibition_date__day=int(date_parts[1]))
+                                    prohibition_date__month=int(date_parts[0]),
+                                    prohibition_date__day=int(date_parts[1]))
                             else:
                                 queryset = SystemUnitProhibitionDate.objects.none()
                         # year
@@ -643,6 +644,8 @@ class ReportCaseView(generics.ListAPIView):
                     renderer_classes = (ReportCasesForUserCSVRenderer,) + tuple(default_renderer_classes)
                 else:
                     renderer_classes = (PaginatedCSVRenderer,) + tuple(default_renderer_classes)
+            else:
+                renderer_classes = tuple(default_renderer_classes)
         else:
             renderer_classes = tuple(default_renderer_classes)
         return [renderer_class() for renderer_class in renderer_classes]
@@ -684,7 +687,7 @@ class ReportCaseView(generics.ListAPIView):
             for key, value in item.items():
                 if isinstance(item[key], list):  # can do this better
                     item[key] = ','.join(str(v) for v in value)
-        if self.request and self.request.accepted_renderer.format == 'csv':
+        if request and request.accepted_renderer.format == 'csv':
             self.filename += dt.now().strftime("%Y") + '-' + dt.now().strftime("%m") + '-' + dt.now().strftime(
                 "%d") + '.csv'
             response['Content-Disposition'] = "attachment; filename=%s" % self.filename
@@ -752,7 +755,7 @@ class ReportCaseCountView(views.APIView):
     # see https://github.com/mjumbewu/django-rest-framework-csv/issues/15
     def finalize_response(self, request, response, *args, **kwargs):
         response = super(ReportCaseCountView, self).finalize_response(request, response, *args, **kwargs)
-        if self.request and self.request.accepted_renderer.format == 'csv':
+        if request and request.accepted_renderer.format == 'csv':
             self.filename += dt.now().strftime("%Y") + '-' + dt.now().strftime("%m") + '-' + dt.now().strftime(
                 "%d") + '.csv'
             response['Content-Disposition'] = "attachment; filename=%s" % self.filename

@@ -3,7 +3,7 @@
     "name": "cbrsservices_django",
     "organization": "U.S. Geological Survey",
     "description": "Web services for CBRS DMS (Coastal Barrier Resources System Determinations Management System)",
-    "version": "v1.3.0",
+    "version": "v1.3.1",
     "status": "Production",
 
     "permissions": {
