@@ -6,7 +6,6 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from rest_framework.parsers import FormParser, MultiPartParser
-from rest_framework_extensions.cache.mixins import CacheResponseMixin
 from cbrsservices.serializers import *
 from cbrsservices.models import *
 from cbrsservices.permissions import *
@@ -286,8 +285,8 @@ class CaseFileViewSet(HistoryViewSet):
                 return self.request.user
 
         serializer.save(case=Case.objects.get(pk=int(self.request.data.get('case'))),
-                        file=self.request.data.get('file'),
-                        uploader=get_user())
+                        file=self.request.data.get('file'), uploader=get_user(),
+                        created_by=get_user(), modified_by=get_user())
 
     # override the default queryset to allow filtering by URL arguments
     def get_queryset(self):
@@ -466,8 +465,7 @@ class DeterminationViewSet(HistoryViewSet):
     permission_classes = (permissions.IsAuthenticated,)
 
 
-class SystemUnitViewSet(CacheResponseMixin, HistoryViewSet):
-    queryset = SystemUnit.objects.all()
+class SystemUnitViewSet(HistoryViewSet):
     serializer_class = SystemUnitSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -487,7 +485,7 @@ class SystemUnitViewSet(CacheResponseMixin, HistoryViewSet):
         return queryset
 
 
-class SystemUnitTypeViewSet(CacheResponseMixin, HistoryViewSet):
+class SystemUnitTypeViewSet(HistoryViewSet):
     queryset = SystemUnitType.objects.all()
     serializer_class = SystemUnitTypeSerializer
     permission_classes = (permissions.IsAuthenticated,)
