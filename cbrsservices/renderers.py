@@ -384,7 +384,7 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
         # find text between 'https' and '.' and underline/blue font
         details_link = re.search('http(.*).', details)
         p7 = document.add_paragraph()
-        if details_link.group(0):
+        if details_link is not None and details_link.group(0):
             details = details.split(details_link.group(0))
             p7_run = p7.add_run(details[0])
             p7_run.font.name = DOC_FONT_TYPE
@@ -403,7 +403,7 @@ class FinalLetterDOCXRenderer(DOCXRenderer):
 
         closing_link = re.search('http(.*)/.', closing)
         p8 = document.add_paragraph()
-        if closing_link.group(0):
+        if closing_link is not None and closing_link.group(0):
             closing = closing.split(closing_link.group(0))
             p8_run = p8.add_run(closing[0])
             p8_run.font.name = DOC_FONT_TYPE

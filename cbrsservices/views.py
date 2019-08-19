@@ -90,7 +90,7 @@ class CaseViewSet(HistoryViewSet):
             return WorkbenchSerializer
         elif view is not None and view == 'report':
             return ReportSerializer
-        elif view is not None and self.request.accepted_renderer.format == 'docx':
+        elif self.request.accepted_renderer.format == 'docx':
             return LetterSerializer
         elif view is not None and view == 'caseid':
             return CaseIDSerializer
