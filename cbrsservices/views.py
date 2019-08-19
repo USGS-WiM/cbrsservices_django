@@ -684,7 +684,7 @@ class ReportCaseView(generics.ListAPIView):
         for item in response.data.get('results'):
             for key, value in item.items():
                 if isinstance(item[key], list):  # can do this better
-                    item[key] = ','.join(str(v) for v in value)
+                    item[key] = ', '.join(str(v) for v in value)
         if request and request.accepted_renderer.format == 'csv':
             self.filename += dt.now().strftime("%Y") + '-' + dt.now().strftime("%m") + '-' + dt.now().strftime(
                 "%d") + '.csv'
