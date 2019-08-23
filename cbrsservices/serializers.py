@@ -6,6 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 from rest_framework import serializers
 from cbrsservices.models import *
+from cbrsservices.field_descriptions import *
 
 
 ######
@@ -116,11 +117,11 @@ class CaseSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("final_letter_date cannot be later than close_date.")
         return data
 
-    analyst_string = serializers.StringRelatedField(source='analyst', help_text="The analyst's username")
-    qc_reviewer_string = serializers.StringRelatedField(source='qc_reviewer', help_text="The QC reviewer's username")
-    cbrs_unit_string = serializers.StringRelatedField(source='cbrs_unit', help_text='The system unit number of the unit closest to/containing the property')
-    map_number_string = serializers.StringRelatedField(source='map_number', help_text='The map number of the system map containing the property')
-    determination_string = serializers.StringRelatedField(source='determination', help_text='The determination value of the property')
+    analyst_string = serializers.StringRelatedField(source='analyst', help_text=case.analyst_string)
+    qc_reviewer_string = serializers.StringRelatedField(source='qc_reviewer', help_text=case.qc_reviewer_string)
+    cbrs_unit_string = serializers.StringRelatedField(source='cbrs_unit', help_text=systemunit.system_unit_number)
+    map_number_string = serializers.StringRelatedField(source='map_number', help_text=systemunitmap.map_number)
+    determination_string = serializers.StringRelatedField(source='determination', help_text=casedetermination.determination)
 
     class Meta:
         model = Case
@@ -135,10 +136,10 @@ class CaseSerializer(serializers.ModelSerializer):
 
 
 class WorkbenchSerializer(serializers.ModelSerializer):
-    analyst_string = serializers.StringRelatedField(source='analyst', help_text="The analyst's username")
-    qc_reviewer_string = serializers.StringRelatedField(source='qc_reviewer', help_text="The QC reviewer's username")
-    cbrs_unit_string = serializers.StringRelatedField(source='cbrs_unit', help_text='The system unit number of the unit closest to/containing the property')
-    property_string = serializers.StringRelatedField(source='property', help_text='The combined string of the property location')
+    analyst_string = serializers.StringRelatedField(source='analyst', help_text=case.analyst_string)
+    qc_reviewer_string = serializers.StringRelatedField(source='qc_reviewer', help_text=case.qc_reviewer_string)
+    cbrs_unit_string = serializers.StringRelatedField(source='cbrs_unit', help_text=systemunit.system_unit_number)
+    property_string = serializers.StringRelatedField(source='property', help_text=case.property_string)
 
     class Meta:
         model = Case
@@ -148,27 +149,27 @@ class WorkbenchSerializer(serializers.ModelSerializer):
 
 
 class LetterSerializer(serializers.ModelSerializer):
-    cbrs_unit_string = serializers.StringRelatedField(source='cbrs_unit', help_text='The system unit number of the unit closest to/containing the property')
-    system_unit_type = serializers.StringRelatedField(source='cbrs_unit.system_unit_type', help_text='The system unit type')
-    determination_string = serializers.StringRelatedField(source='determination', help_text='The determination value of the property')
-    map_number_string = serializers.StringRelatedField(source='map_number', help_text='The map number of the system map containing the property')
-    policy_number = serializers.CharField(source='property.policy_number', help_text='The policy number')
-    property_street = serializers.CharField(source='property.street', help_text='The street address of the property')
-    property_unit = serializers.CharField(source='property.unit', help_text='The unit at which the property is located')
-    property_city = serializers.CharField(source='property.city', help_text='The city in which the property is located')
-    property_state = serializers.CharField(source='property.state', help_text='The state in which the property is located')
-    property_zipcode = serializers.CharField(source='property.zipcode', help_text='The zip code at which the property is located')
-    legal_description = serializers.CharField(source='property.legal_description', help_text='The legal description of the property')
-    subdivision = serializers.CharField(source='property.subdivision', help_text='The subdivision name of the property')
-    salutation = serializers.CharField(source='requester.salutation', help_text='Preferred salutation of the requester (e.g. Mrs.)')
-    first_name = serializers.CharField(source='requester.first_name', help_text="The requester's first name")
-    last_name = serializers.CharField(source='requester.last_name', help_text="The requester's last name")
-    requester_organization = serializers.CharField(source='requester.organization', help_text="The requester's organization")
-    requester_street = serializers.CharField(source='requester.street', help_text="The street number at which requester's address is located")
-    requester_unit = serializers.CharField(source='requester.unit', help_text="The unit number at which the requester's address is located")
-    requester_city = serializers.CharField(source='requester.city', help_text="The city in which the requester's address is located")
-    requester_state = serializers.CharField(source='requester.state', help_text="The state in which the requester's address is located")
-    requester_zipcode = serializers.CharField(source='requester.zipcode', help_text="The zip code in which the requester's address is located")
+    cbrs_unit_string = serializers.StringRelatedField(source='cbrs_unit', help_text=systemunit.system_unit_number)
+    system_unit_type = serializers.StringRelatedField(source='cbrs_unit.system_unit_type', help_text=systemunit.unit_type)
+    determination_string = serializers.StringRelatedField(source='determination', help_text=casedetermination.determination)
+    map_number_string = serializers.StringRelatedField(source='map_number', help_text=systemunitmap.map_number)
+    policy_number = serializers.CharField(source='property.policy_number', help_text=address.policy_number)
+    property_street = serializers.CharField(source='property.street', help_text=address.street)
+    property_unit = serializers.CharField(source='property.unit', help_text=address.unit)
+    property_city = serializers.CharField(source='property.city', help_text=address.city)
+    property_state = serializers.CharField(source='property.state', help_text=address.state)
+    property_zipcode = serializers.CharField(source='property.zipcode', help_text=address.zipcode)
+    legal_description = serializers.CharField(source='property.legal_description', help_text=address.legal_description)
+    subdivision = serializers.CharField(source='property.subdivision', help_text=address.subdivision)
+    salutation = serializers.CharField(source='requester.salutation', help_text=requester.salutation)
+    first_name = serializers.CharField(source='requester.first_name', help_text=requester.first_name)
+    last_name = serializers.CharField(source='requester.last_name', help_text=requester.last_name)
+    requester_organization = serializers.CharField(source='requester.organization', help_text=requester.organization)
+    requester_street = serializers.CharField(source='requester.street', help_text=address.street)
+    requester_unit = serializers.CharField(source='requester.unit', help_text=address.unit)
+    requester_city = serializers.CharField(source='requester.city', help_text=address.city)
+    requester_state = serializers.CharField(source='requester.state', help_text=address.state)
+    requester_zipcode = serializers.CharField(source='requester.zipcode', help_text=address.zipcode)
 
     class Meta:
         model = Case
@@ -213,7 +214,7 @@ class RequesterSerializer(serializers.ModelSerializer):
 
 
 class CaseTagSerializer(serializers.ModelSerializer):
-    tagname = serializers.StringRelatedField(source='tag', help_text='The tag name')
+    tagname = serializers.StringRelatedField(source='tag', help_text=casetag.name)
 
     class Meta:
         model = CaseTag
@@ -235,7 +236,7 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    created_by_string = serializers.StringRelatedField(source='created_by', help_text='The date the object was created in "YYYY-MM-DD" format')
+    created_by_string = serializers.StringRelatedField(source='created_by', help_text=history.created_by_string)
 
     class Meta:
         model = Comment
@@ -258,7 +259,7 @@ class DeterminationSerializer(serializers.ModelSerializer):
 
 
 class SystemUnitSerializer(serializers.ModelSerializer):
-    system_unit_type_string = serializers.StringRelatedField(source='system_unit_type', help_text='The system unit type')
+    system_unit_type_string = serializers.StringRelatedField(source='system_unit_type', help_text=systemunit.unit_type_string)
 
     class Meta:
         model = SystemUnit
@@ -275,8 +276,8 @@ class SystemUnitTypeSerializer(serializers.ModelSerializer):
 
 
 class SystemUnitProhibitionDateSerializer(serializers.ModelSerializer):
-    prohibition_date_mdy = serializers.DateField(format='%m/%d/%y', source='prohibition_date', help_text='The flood insurance prohibition date in "MM/DD/YYYY" format')
-    system_unit_string = serializers.StringRelatedField(source='system_unit', help_text='The system unit number of the unit the prohibition was placed on')
+    prohibition_date_mdy = serializers.DateField(format='%m/%d/%y', source='prohibition_date', help_text=prohibitiondate.prohibition_date_mdy)
+    system_unit_string = serializers.StringRelatedField(source='system_unit', help_text=systemunit.system_unit_number)
 
     class Meta:
         model = SystemUnitProhibitionDate
@@ -314,8 +315,8 @@ class FieldOfficeSerializer(serializers.ModelSerializer):
 
 
 class ReportSerializer(serializers.ModelSerializer):
-    property_string = serializers.StringRelatedField(source='property', help_text='The combined string of the property')
-    determination_string = serializers.StringRelatedField(source='determination', help_text='The determination value of the property')
+    property_string = serializers.StringRelatedField(source='property', help_text=case.property_string)
+    determination_string = serializers.StringRelatedField(source='determination', help_text=casedetermination.determination)
 
     class Meta:
         model = ReportCase
@@ -329,17 +330,17 @@ class ReportCasesByUnitSerializer(serializers.ModelSerializer):
         prop_street_address = prop_street.split(",")[0]
         return prop_street_address
 
-    cbrs_unit_string = serializers.StringRelatedField(source='cbrs_unit', help_text='The system unit number of the unit closest to/containing the property')
-    property_string = serializers.StringRelatedField(source='property', help_text='The combined string of the property')
-    determination_string = serializers.StringRelatedField(source='determination', help_text='The determination value of the property')
-    street_address = serializers.SerializerMethodField(help_text='The street address of the property')
-    tags = serializers.StringRelatedField(many=True, help_text='A comma-separated list of the tags for the given case')
-    comments = serializers.StringRelatedField(many=True, help_text='A comma-separated list of the commens for the given case')
-    map_number_string = serializers.StringRelatedField(source='map_number', help_text='The map number of the system map containing the property')
-    analyst_string = serializers.StringRelatedField(source='analyst', help_text='The username of the analyst on the case')
-    qc_reviewer_string = serializers.StringRelatedField(source='qc_reviewer', help_text="The QC reviewer's username")
-    created_by_string = serializers.StringRelatedField(source='created_by', help_text='The date the object was created in "YYYY-MM-DD" format')
-    modified_by_string = serializers.StringRelatedField(source='modified_by', help_text='The date the object was last modifed in "YYYY-MM-DD" format')
+    cbrs_unit_string = serializers.StringRelatedField(source='cbrs_unit', help_text=systemunit.system_unit_number)
+    property_string = serializers.StringRelatedField(source='property', help_text=case.property_string)
+    determination_string = serializers.StringRelatedField(source='determination', help_text=casedetermination.determination)
+    street_address = serializers.SerializerMethodField(help_text=address.street)
+    tags = serializers.StringRelatedField(many=True, help_text=case.tags)
+    comments = serializers.StringRelatedField(many=True, help_text=case.comments)
+    map_number_string = serializers.StringRelatedField(source='map_number', help_text=systemunitmap.map_number)
+    analyst_string = serializers.StringRelatedField(source='analyst', help_text=case.analyst_string)
+    qc_reviewer_string = serializers.StringRelatedField(source='qc_reviewer', help_text=case.qc_reviewer_string)
+    created_by_string = serializers.StringRelatedField(source='created_by', help_text=history.created_by_string)
+    modified_by_string = serializers.StringRelatedField(source='modified_by', help_text=history.modified_by_string)
 
     class Meta:
         model = ReportCase
@@ -359,17 +360,17 @@ class ReportCasesForUserSerializer(serializers.ModelSerializer):
         prop_street_address = prop_street.split(",")[0]
         return prop_street_address
 
-    cbrs_unit_string = serializers.StringRelatedField(source='cbrs_unit', help_text='The system unit number of the unit closest to/containing the property')
-    property_string = serializers.StringRelatedField(source='property', help_text='The combined string of the property')
-    determination_string = serializers.StringRelatedField(source='determination', help_text='The determination value of the property')
-    street_address = serializers.SerializerMethodField(help_text='The street address of the property')
-    tags = serializers.StringRelatedField(many=True, help_text='A comma-separated list of the tags for the given case')
-    comments = serializers.StringRelatedField(many=True, help_text='A comma-separated list of the commens for the given case')
-    map_number_string = serializers.StringRelatedField(source='map_number', help_text='The map number of the system map containing the property')
-    analyst_string = serializers.StringRelatedField(source='analyst', help_text='The username of the analyst on the case')
-    qc_reviewer_string = serializers.StringRelatedField(source='qc_reviewer', help_text="The QC reviewer's username")
-    created_by_string = serializers.StringRelatedField(source='created_by', help_text='The date the object was created in "YYYY-MM-DD" format')
-    modified_by_string = serializers.StringRelatedField(source='modified_by', help_text='The date the object was last modifed in "YYYY-MM-DD" format')
+    cbrs_unit_string = serializers.StringRelatedField(source='cbrs_unit', help_text=systemunit.system_unit_number)
+    property_string = serializers.StringRelatedField(source='property', help_text=case.property_string)
+    determination_string = serializers.StringRelatedField(source='determination', help_text=casedetermination.determination)
+    street_address = serializers.SerializerMethodField(help_text=address.street)
+    tags = serializers.StringRelatedField(many=True, help_text=case.tags)
+    comments = serializers.StringRelatedField(many=True, help_text=case.comments)
+    map_number_string = serializers.StringRelatedField(source='map_number', help_text=systemunitmap.map_number)
+    analyst_string = serializers.StringRelatedField(source='analyst', help_text=case.analyst_string)
+    qc_reviewer_string = serializers.StringRelatedField(source='qc_reviewer', help_text=case.qc_reviewer_string)
+    created_by_string = serializers.StringRelatedField(source='created_by', help_text=history.created_by)
+    modified_by_string = serializers.StringRelatedField(source='modified_by', help_text=history.modified_by_string)
 
     class Meta:
         model = ReportCase
@@ -383,8 +384,8 @@ class ReportCasesForUserSerializer(serializers.ModelSerializer):
 
 
 class ReportDaysToResolutionSerializer(serializers.ModelSerializer):
-    property_string = serializers.StringRelatedField(source='property', help_text='The combined string of the property')
-    determination_string = serializers.StringRelatedField(source='determination', help_text='The determination value of the property')
+    property_string = serializers.StringRelatedField(source='property', help_text=case.property_string)
+    determination_string = serializers.StringRelatedField(source='determination', help_text=casedetermination.determination)
 
     class Meta:
         model = ReportCase
@@ -393,8 +394,8 @@ class ReportDaysToResolutionSerializer(serializers.ModelSerializer):
 
 
 class ReportDaysToEachStatusSerializer(serializers.ModelSerializer):
-    property_string = serializers.StringRelatedField(source='property', help_text='The combined string of the property')
-    determination_string = serializers.StringRelatedField(source='determination', help_text='The determination value of the property')
+    property_string = serializers.StringRelatedField(source='property', help_text=case.property_string)
+    determination_string = serializers.StringRelatedField(source='determination', help_text=casedetermination.determination)
 
     class Meta:
         model = ReportCase
@@ -460,8 +461,8 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-    password = serializers.CharField(write_only=True, required=False, help_text="The user's password")
-    is_superuser = serializers.CharField(write_only=True, required=False, help_text="A boolean value indicating if the user is a superuser")
+    password = serializers.CharField(write_only=True, required=False, help_text=user.password)
+    is_superuser = serializers.CharField(write_only=True, required=False, help_text=user.is_superuser)
 
     class Meta:
         model = User
