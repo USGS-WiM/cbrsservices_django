@@ -82,6 +82,8 @@ class CaseViewSet(HistoryViewSet):
         frmt = self.request.query_params.get('format', None) if self.request else None
         if frmt is not None and frmt == 'docx':
             renderer_classes = (FinalLetterDOCXRenderer,) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)
+        elif frmt is not None and frmt == 'csv':
+            renderer_classes = (WorkbenchCSVRenderer,) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)
         else:
             renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES)
         return [renderer_class() for renderer_class in renderer_classes]
@@ -105,11 +107,21 @@ class CaseViewSet(HistoryViewSet):
     # see https://github.com/mjumbewu/django-rest-framework-csv/issues/15
     def finalize_response(self, request, *args, **kwargs):
         response = super(viewsets.ModelViewSet, self).finalize_response(request, *args, **kwargs)
+         # join list of tag numbers
+        for item in response.data:
+            for key, value in item.items():
+                if isinstance(item[key], list):  # TODO: can do this better
+                    item[key] = ', '.join(str(v) for v in value)
         if request is not None and request.accepted_renderer.format == 'docx':
             filename = 'final_letter_case_'
             filename += self.get_queryset().first().case_reference + '_'
             filename += dt.now().strftime("%Y") + '-' + dt.now().strftime("%m") + '-' + dt.now().strftime("%d")
             filename += '.docx'
+            response['Content-Disposition'] = "attachment; filename=%s" % filename
+            response['Access-Control-Expose-Headers'] = 'Content-Disposition'
+        elif request is not None and request.accepted_renderer.format == 'csv':
+            filename = 'Workbench_' + dt.now().strftime("%Y") + '-' + dt.now().strftime("%m") + '-' + dt.now().strftime(
+                "%d") + '.csv'
             response['Content-Disposition'] = "attachment; filename=%s" % filename
             response['Access-Control-Expose-Headers'] = 'Content-Disposition'
         return response

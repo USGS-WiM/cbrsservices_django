@@ -66,7 +66,9 @@ requester = ModelFieldDescriptions({
     'first_name': "An alphanumeric value of the requester's first name",
     'last_name': "An alphanumeric value of the requester's last name",
     'organization': "An alphanumeric value of the requester's organization",
-    'email': "An alphanumeric value of the requester's email"
+    'email': "An alphanumeric value of the requester's email",
+    'full_name': "An alphanumeric value of the first and last name of the person who made the request",
+    'address': "An alphanumeric value of the requester's address"
 })
 
 casetag = ModelFieldDescriptions({

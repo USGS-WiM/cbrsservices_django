@@ -136,17 +136,36 @@ class CaseSerializer(serializers.ModelSerializer):
 
 
 class WorkbenchSerializer(serializers.ModelSerializer):
+    def get_requester_address(self, obj):
+        prop = obj.requester
+        prop_address = []
+        if prop is not None:
+            if prop.street is not None and prop.street != '': prop_address.append(prop.street)
+            if prop.unit is not None and prop.unit != '': prop_address.append(prop.unit)
+            if prop.city is not None and prop.city != '': prop_address.append(prop.city)
+            if prop.state is not None and prop.state != '': prop_address.append(prop.state)
+        prop_address = ', '.join(prop_address).replace('\n', ' ');
+        # no comma between state and zipcode
+        if prop.zipcode is not None and prop.zipcode != '': prop_address + ' ' + prop.zipcode
+        return prop_address
+
     analyst_string = serializers.StringRelatedField(source='analyst', help_text=case.analyst_string)
     qc_reviewer_string = serializers.StringRelatedField(source='qc_reviewer', help_text=case.qc_reviewer_string)
     cbrs_unit_string = serializers.StringRelatedField(source='cbrs_unit', help_text=systemunit.system_unit_number)
     property_string = serializers.StringRelatedField(source='property', help_text=case.property_string)
+    determination_string = serializers.StringRelatedField(source='determination', help_text=casedetermination.determination)
+    requester_organization = serializers.CharField(source='requester.organization', help_text=requester.organization)
+    requester_string = serializers.StringRelatedField(source='requester', help_text=requester.full_name)
+    tags = serializers.StringRelatedField(many=True, help_text=case.tags)
+    requester_email = serializers.CharField(source='requester.email', help_text=requester.email)
+    requester_address = serializers.SerializerMethodField(help_text=requester.address)
 
     class Meta:
         model = Case
-        fields = ('id', 'case_reference', 'status', 'request_date', 'property_string', 'cbrs_unit_string', 'distance',
+        fields = ('id', 'case_reference', 'status', 'request_date', 'property_string', 'cbrs_unit_string', 'determination_string', 'distance',
                   'analyst_string', 'qc_reviewer_string', 'priority', 'on_hold', 'invalid', 'duplicate', 'tags',
-                  'hard_copy_map_reviewed')
-
+                  'analyst_signoff_date', 'qc_reviewer_signoff_date', 'final_letter_date', 'prohibition_date',
+                  'hard_copy_map_reviewed', 'requester_string', 'requester_organization', 'requester_email', 'requester_address')
 
 class LetterSerializer(serializers.ModelSerializer):
     cbrs_unit_string = serializers.StringRelatedField(source='cbrs_unit', help_text=systemunit.system_unit_number)
@@ -198,11 +217,10 @@ class PropertySerializer(serializers.ModelSerializer):
 
 
 class RequesterSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Requester
         fields = ('id', 'salutation', 'first_name', 'last_name', 'organization', 'email',
-                  'street', 'unit', 'city', 'state', 'zipcode', 'cases',)
+                  'street', 'unit', 'city', 'state', 'zipcode', 'cases')
         read_only_fields = ('cases',)
 
 
