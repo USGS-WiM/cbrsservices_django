@@ -108,7 +108,7 @@ class CaseViewSet(HistoryViewSet):
     def finalize_response(self, request, *args, **kwargs):
         response = super(viewsets.ModelViewSet, self).finalize_response(request, *args, **kwargs)
          # join list of tag numbers
-        for item in response.data:
+        for item in (item for item in response.data if isinstance(item, dict)):
             for key, value in item.items():
                 if isinstance(item[key], list):  # TODO: can do this better
                     item[key] = ', '.join(str(v) for v in value)
@@ -713,7 +713,7 @@ class ReportCaseView(generics.ListAPIView):
         for item in response.data.get('results'):
             for key, value in item.items():
                 if isinstance(item[key], list):  # can do this better
-                    item[key] = ', '.join(str(v) for v in value)
+                        item[key] = ', '.join(str(v) for v in value)
         if request and request.accepted_renderer.format == 'csv':
             self.filename += dt.now().strftime("%Y") + '-' + dt.now().strftime("%m") + '-' + dt.now().strftime(
                 "%d") + '.csv'
