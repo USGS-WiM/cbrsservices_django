@@ -6,11 +6,13 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
 from rest_framework.parsers import FormParser, MultiPartParser
+from django_filters.rest_framework import DjangoFilterBackend
 from cbrsservices.serializers import *
 from cbrsservices.models import *
 from cbrsservices.permissions import *
 from cbrsservices.renderers import *
 from cbrsservices.paginations import *
+from cbrsservices.filters import *
 
 
 ########################################################################################################################
@@ -43,6 +45,7 @@ class HistoryViewSet(viewsets.ModelViewSet):
     """
 
     permission_classes = (IsActive,)
+    filter_backends = [DjangoFilterBackend]
 
     def perform_create(self, serializer):
         if self.basename != 'users':
@@ -66,6 +69,7 @@ class HistoryViewSet(viewsets.ModelViewSet):
 
 class CaseViewSet(HistoryViewSet):
     permission_classes = (permissions.IsAuthenticated,)
+    filterset_class = CaseFilter
 
     @action(methods=['post'], detail=True)
     def send_final_email(self, request, pk=None):
@@ -78,6 +82,8 @@ class CaseViewSet(HistoryViewSet):
         frmt = self.request.query_params.get('format', None) if self.request else None
         if frmt is not None and frmt == 'docx':
             renderer_classes = (FinalLetterDOCXRenderer,) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)
+        elif frmt is not None and frmt == 'csv':
+            renderer_classes = (WorkbenchCSVRenderer,) + tuple(api_settings.DEFAULT_RENDERER_CLASSES)
         else:
             renderer_classes = tuple(api_settings.DEFAULT_RENDERER_CLASSES)
         return [renderer_class() for renderer_class in renderer_classes]
@@ -90,7 +96,7 @@ class CaseViewSet(HistoryViewSet):
             return WorkbenchSerializer
         elif view is not None and view == 'report':
             return ReportSerializer
-        elif self.request.accepted_renderer.format == 'docx':
+        elif self.request is not None and self.request.accepted_renderer.format == 'docx':
             return LetterSerializer
         elif view is not None and view == 'caseid':
             return CaseIDSerializer
@@ -101,11 +107,21 @@ class CaseViewSet(HistoryViewSet):
     # see https://github.com/mjumbewu/django-rest-framework-csv/issues/15
     def finalize_response(self, request, *args, **kwargs):
         response = super(viewsets.ModelViewSet, self).finalize_response(request, *args, **kwargs)
+         # join list of tag numbers
+        for item in (item for item in response.data if isinstance(item, dict)):
+            for key, value in item.items():
+                if isinstance(item[key], list):  # TODO: can do this better
+                    item[key] = ', '.join(str(v) for v in value)
         if request is not None and request.accepted_renderer.format == 'docx':
             filename = 'final_letter_case_'
             filename += self.get_queryset().first().case_reference + '_'
             filename += dt.now().strftime("%Y") + '-' + dt.now().strftime("%m") + '-' + dt.now().strftime("%d")
             filename += '.docx'
+            response['Content-Disposition'] = "attachment; filename=%s" % filename
+            response['Access-Control-Expose-Headers'] = 'Content-Disposition'
+        elif request is not None and request.accepted_renderer.format == 'csv':
+            filename = 'Workbench_' + dt.now().strftime("%Y") + '-' + dt.now().strftime("%m") + '-' + dt.now().strftime(
+                "%d") + '.csv'
             response['Content-Disposition'] = "attachment; filename=%s" % filename
             response['Access-Control-Expose-Headers'] = 'Content-Disposition'
         return response
@@ -160,6 +176,7 @@ class CaseViewSet(HistoryViewSet):
                 case_number_list = case_number.split(',')
                 queryset = queryset.filter(id__in=case_number_list)
             # filter by case reference, exact list
+            # TODO: I don't think this is working as expected
             case_reference = self.request.query_params.get('case_reference', None)
             if case_reference is not None:
                 case_reference_list = case_reference.split(',')
@@ -274,6 +291,7 @@ class CaseFileViewSet(HistoryViewSet):
     serializer_class = CaseFileSerializer
     permission_classes = (permissions.IsAuthenticated,)
     parser_classes = (MultiPartParser, FormParser,)
+    filterset_class = CaseFileFilter
 
     # override the default create to include user information
     def perform_create(self, serializer):
@@ -302,6 +320,7 @@ class CaseFileViewSet(HistoryViewSet):
 class PropertyViewSet(HistoryViewSet):
     serializer_class = PropertySerializer
     permission_classes = (permissions.IsAuthenticated,)
+    filterset_class = PropertyFilter
 
     # override the default queryset to allow filtering by URL arguments
     def get_queryset(self):
@@ -341,6 +360,7 @@ class PropertyViewSet(HistoryViewSet):
 class RequesterViewSet(HistoryViewSet):
     serializer_class = RequesterSerializer
     permission_classes = (permissions.IsAuthenticated,)
+    filterset_class = RequesterFilter
 
     # override the default queryset to allow filtering by URL arguments
     def get_queryset(self):
@@ -403,6 +423,7 @@ class RequesterViewSet(HistoryViewSet):
 class CaseTagViewSet(HistoryViewSet):
     serializer_class = CaseTagSerializer
     permission_classes = (permissions.IsAuthenticated,)
+    filterset_class = CaseTagFilter
 
     # override the default queryset to allow filtering by URL arguments
     def get_queryset(self):
@@ -418,6 +439,7 @@ class CaseTagViewSet(HistoryViewSet):
 class TagViewSet(HistoryViewSet):
     serializer_class = TagSerializer
     permission_classes = (permissions.IsAuthenticated,)
+    filterset_class = TagFilter
 
     # override the default queryset to allow filtering by URL arguments
     def get_queryset(self):
@@ -440,6 +462,7 @@ class TagViewSet(HistoryViewSet):
 class CommentViewSet(HistoryViewSet):
     serializer_class = CommentSerializer
     permission_classes = (permissions.IsAuthenticated,)
+    filterset_class = CommentFilter
 
     # override the default queryset to allow filtering by URL arguments
     def get_queryset(self):
@@ -463,11 +486,13 @@ class DeterminationViewSet(HistoryViewSet):
     queryset = Determination.objects.all()
     serializer_class = DeterminationSerializer
     permission_classes = (permissions.IsAuthenticated,)
+    filterset_class = DeterminationFilter
 
 
 class SystemUnitViewSet(HistoryViewSet):
     serializer_class = SystemUnitSerializer
     permission_classes = (permissions.IsAuthenticated,)
+    filterset_class = SystemUnitFilter
 
     # override the default queryset to allow filtering by URL arguments
     def get_queryset(self):
@@ -494,6 +519,7 @@ class SystemUnitTypeViewSet(HistoryViewSet):
 class SystemUnitProhibitionDateViewSet(HistoryViewSet):
     serializer_class = SystemUnitProhibitionDateSerializer
     permission_classes = (permissions.IsAuthenticated,)
+    filterset_class = SystemUnitProhibitionDateFilter
 
     # override the default queryset to allow filtering by URL arguments
     def get_queryset(self):
@@ -562,6 +588,7 @@ class SystemUnitProhibitionDateViewSet(HistoryViewSet):
 class SystemUnitMapViewSet(HistoryViewSet):
     serializer_class = SystemUnitMapSerializer
     permission_classes = (permissions.IsAuthenticated,)
+    filterset_class = SystemUnitMapFilter
 
     # override the default queryset to allow filtering by URL arguments
     def get_queryset(self):
@@ -581,6 +608,7 @@ class SystemUnitMapViewSet(HistoryViewSet):
 class SystemMapViewSet(HistoryViewSet):
     serializer_class = SystemMapSerializer
     permission_classes = (permissions.IsAuthenticated,)
+    filterset_class = SystemMapFilter
 
     # override the default queryset to allow filtering by URL arguments
     def get_queryset(self):
@@ -621,6 +649,7 @@ class ReportCaseView(generics.ListAPIView):
     permission_classes = (permissions.IsAuthenticated,)
     pagination_class = StandardResultsSetPagination
     filename = ""
+    filterset_class = ReportCaseFilter
 
     # override the default renderers to use a custom csv renderer when requested
     # note that these custom renderers have hard-coded field name headers that match the their respective serialzers
@@ -684,7 +713,7 @@ class ReportCaseView(generics.ListAPIView):
         for item in response.data.get('results'):
             for key, value in item.items():
                 if isinstance(item[key], list):  # can do this better
-                    item[key] = ', '.join(str(v) for v in value)
+                        item[key] = ', '.join(str(v) for v in value)
         if request and request.accepted_renderer.format == 'csv':
             self.filename += dt.now().strftime("%Y") + '-' + dt.now().strftime("%m") + '-' + dt.now().strftime(
                 "%d") + '.csv'
@@ -736,6 +765,7 @@ class ReportCaseCountView(views.APIView):
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = ReportCountOfCasesByStatusSerializer
     filename = "Report_CountCasesByStatus_"
+    filterset_class = ReportCaseCountFilter #TODO: not showing query params
 
     # override the default renderers to use a custom csv renderer when requested
     # note that these custom renderers have hard-coded field name headers that match the their respective serialzers
@@ -775,6 +805,7 @@ class ReportCaseCountView(views.APIView):
 class UserViewSet(HistoryViewSet):
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = UserSerializer
+    filterset_class = UserFilter
 
     def get_queryset(self):
         if self.request:

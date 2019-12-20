@@ -19,6 +19,38 @@ class PaginatedCSVRenderer (CSVRenderer):
             data = data.get(self.results_field, [])
         return super(PaginatedCSVRenderer, self).render(data, *args, **kwargs)
 
+class WorkbenchCSVRenderer (CSVRenderer):
+    header = ['id', 'case_reference', 'status', 'prohibition_date', 'cbrs_unit_string', 'request_date', 'final_letter_date', 'determination_string',
+        'property_string', 'tags', 'duplicate', 'distance', 'analyst_string', 'analyst_signoff_date', 'qc_reviewer_string',
+        'qc_reviewer_signoff_date', 'final_letter_date', 'requester_string', 'requester_organization', 'requester_email', 'requester_address',
+        'priority', 'on_hold', 'invalid', 'hard_copy_map_reviewed']
+    labels = {
+        'id': 'Case ID',
+        'case_reference': 'Case Reference',
+        'status': 'Status',
+        'prohibition_date': 'Prohibition Date',
+        'cbrs_unit_string': 'CBRS Unit',
+        'request_date': 'Request Date',
+        'final_letter_date': 'Final Letter Date',
+        'determination_string': 'Determination',
+        'property_string': 'Property',
+        'tags': 'Tags',
+        'duplicate': 'Duplicate',
+        'distance': 'Distance',
+        'analyst_string': 'Analyst',
+        'analyst_signoff_date': 'Analyst Signoff Date',
+        'qc_reviewer_string': 'QC Reviewer',
+        'qc_reviewer_signoff_date': 'QC Reviewer Signoff Date',
+        'final_letter_date': 'Final Letter Date',
+        'requester_string': 'Requester',
+        'requester_organization': 'Requester Organization',
+        'requester_email': 'Requester Email',
+        'requester_address': 'Requester Address',
+        'priority': 'Priority',
+        'on_hold': 'On Hold',
+        'invalid': 'Invalid',
+        'hard_copy_map_reviewed': 'Hard Copy Map Reviewed',
+    }
 
 class ReportCasesByUnitCSVRenderer (PaginatedCSVRenderer):
     header = ['id', 'status', 'prohibition_date', 'cbrs_unit_string', 'request_date', 'final_letter_date',
