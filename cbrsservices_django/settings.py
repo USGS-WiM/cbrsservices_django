@@ -100,7 +100,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'simple_history',
     'rest_framework',
-    'rest_framework_extensions',
     'corsheaders',
     'cbrsservices',
 ]
