@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from localflavor.us.models import USStateField, USZipCodeField
 from simple_history.models import HistoricalRecords
+from cbrsservices.field_descriptions import *
 
 
 # Users will be stored in the core User model instead of a custom model.
@@ -26,12 +27,12 @@ class HistoryModel(models.Model):
     An abstract base class model to track creation, modification, and data change history.
     """
 
-    created_date = models.DateField(default=date.today, null=True, blank=True, db_index=True, help_text='The date the object was created in "YYYY-MM-DD" format')
+    created_date = models.DateField(default=date.today, null=True, blank=True, db_index=True, help_text=history.created_date)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT,null=True, blank=True,
-                                    db_index=True, related_name='%(class)s_creator', help_text='The user who created the object')
-    modified_date = models.DateField(auto_now=True, null=True, blank=True, help_text='The date the object was last modified in "YYYY-MM-DD" format')
+                                    db_index=True, related_name='%(class)s_creator', help_text=history.created_by)
+    modified_date = models.DateField(auto_now=True, null=True, blank=True, help_text=history.modified_date)
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True, blank=True,
-                                    db_index=True, related_name='%(class)s_modifier', help_text='The user who last modified the object')
+                                    db_index=True, related_name='%(class)s_modifier', help_text=history.modified_by)
     history = HistoricalRecords(inherit=True)
 
     class Meta:
@@ -44,11 +45,11 @@ class AddressModel(HistoryModel):
     An abstract base class model for common address fields.
     """
 
-    street = models.CharField(max_length=255, blank=True, help_text='The street name of the address')
-    unit = models.CharField(max_length=255, blank=True, help_text='The unit at which the address is located')
-    city = models.CharField(max_length=255, blank=True, help_text='The city in which the address is located')
-    state = USStateField(null=True, blank=True, help_text='The state in which the address is located')
-    zipcode = USZipCodeField(null=True, blank=True, help_text='The zipcode at which the address is located')
+    street = models.CharField(max_length=255, blank=True, help_text=address.street)
+    unit = models.CharField(max_length=255, blank=True, help_text=address.unit)
+    city = models.CharField(max_length=255, blank=True, help_text=address.city)
+    state = USStateField(null=True, blank=True, help_text=address.state)
+    zipcode = USZipCodeField(null=True, blank=True, help_text=address.zipcode)
 
     class Meta:
         abstract = True
@@ -119,38 +120,37 @@ class Case(HistoryModel):
     # this custom receiver will create the case hash (public ID) and send a confirmation email
 
     case_number = property(_get_id)
-    case_reference = models.CharField(max_length=255, blank=True, help_text="The alphanumeric case reference")
-    duplicate = models.ForeignKey('self', on_delete=models.PROTECT, null=True, blank=True, help_text="If the case is a duplicate, indicates the ID of the original case")
+    case_reference = models.CharField(max_length=255, blank=True, help_text=case.case_reference)
+    duplicate = models.ForeignKey('self', on_delete=models.PROTECT, null=True, blank=True, help_text=case.duplicate)
     status = property(_get_status)
-    request_date = models.DateField(default=date.today, null=True, blank=True, help_text='Date the case request was submitted in "YYYY-MM-DD" format')
-    requester = models.ForeignKey('Requester', on_delete=models.PROTECT, related_name='cases', help_text="A foreign key integer value identifying the person who submitted the case request")
-    property = models.ForeignKey('Property', on_delete=models.PROTECT, related_name='cases', help_text="A foreign key integer value identifying the property")
-    cbrs_unit = models.ForeignKey('SystemUnit', on_delete=models.PROTECT, null=True, blank=True, help_text="A foreign key integer value identifying the cbrs unit closest to/containing the property")
-    map_number = models.ForeignKey('SystemMap', on_delete=models.PROTECT, null=True, blank=True, help_text="A foreign key integer value identifying a system map containing the property")
-    cbrs_map_date = models.DateField(null=True, blank=True, help_text='The system map date in "YYYY-MM-DD" format')
-    determination = models.ForeignKey('Determination', on_delete=models.PROTECT, null=True, blank=True, help_text="A foreign key integer value identifying the determination of the property")
-    prohibition_date = models.DateField(null=True, blank=True, help_text='The flood insurance prohibition date in "YYYY-MM-DD" format')
-    distance = models.FloatField(null=True, blank=True, help_text="A number representing the distance the property is from a system unit")
-    fws_fo_received_date = models.DateField(null=True, blank=True, help_text='The field office received date in "YYYY-MM-DD" format')
-    fws_hq_received_date = models.DateField(null=True, blank=True, help_text='The headquarters received date in "YYYY-MM-DD" format')
-    final_letter_date = models.DateField(null=True, blank=True, help_text='The final letter date in "YYYY-MM-DD" format')
-    close_date = models.DateField(null=True, blank=True, help_text='The date the case was closed in "YYYY-MM-DD" format')
-    final_letter_recipient = models.CharField(max_length=255, blank=True, help_text="The full name of the final letter recepient")
+    request_date = models.DateField(default=date.today, null=True, blank=True, help_text=case.request_date)
+    requester = models.ForeignKey('Requester', on_delete=models.PROTECT, related_name='cases', help_text=case.requester)
+    property = models.ForeignKey('Property', on_delete=models.PROTECT, related_name='cases', help_text=case.property)
+    cbrs_unit = models.ForeignKey('SystemUnit', on_delete=models.PROTECT, null=True, blank=True, help_text=case.cbrs_unit)
+    map_number = models.ForeignKey('SystemMap', on_delete=models.PROTECT, null=True, blank=True, help_text=case.map_number)
+    cbrs_map_date = models.DateField(null=True, blank=True, help_text=case.cbrs_map_date)
+    determination = models.ForeignKey('Determination', on_delete=models.PROTECT, null=True, blank=True, help_text=case.determination)
+    prohibition_date = models.DateField(null=True, blank=True, help_text=case.prohibition_date)
+    distance = models.FloatField(null=True, blank=True, help_text=case.distance)
+    fws_fo_received_date = models.DateField(null=True, blank=True, help_text=case.fws_fo_received_date)
+    fws_hq_received_date = models.DateField(null=True, blank=True, help_text=case.fws_hq_received_date)
+    final_letter_date = models.DateField(null=True, blank=True, help_text=case.final_letter_date)
+    close_date = models.DateField(null=True, blank=True, help_text=case.close_date)
+    final_letter_recipient = models.CharField(max_length=255, blank=True, help_text=case.final_letter_recipient)
     analyst = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
-                                related_name='analyst', null=True, blank=True, help_text="A foreign key integer value identifying the user who analyzed the case")
-    analyst_signoff_date = models.DateField(null=True, blank=True, help_text='The date the analyst signed off in "YYYY-MM-DD" format')
+                                related_name='analyst', null=True, blank=True, help_text=case.analyst)
+    analyst_signoff_date = models.DateField(null=True, blank=True, help_text=case.analyst_signoff_date)
     qc_reviewer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
-                                    related_name='qc_reviewer', null=True, blank=True, help_text="A foreign key integer value identifying the QC reviewer")
-    qc_reviewer_signoff_date = models.DateField(null=True, blank=True, help_text='The date the QC reviewer signed off in "YYYY-MM-DD" format')
+                                    related_name='qc_reviewer', null=True, blank=True, help_text=case.qc_reviewer)
+    qc_reviewer_signoff_date = models.DateField(null=True, blank=True, help_text=case.qc_reviewer_signoff_date)
     fws_reviewer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
-                                     related_name='fws_reviewer', null=True, blank=True, help_text="A foreign key integer value identifying the FWS reviewer")
-    fws_reviewer_signoff_date = models.DateField(null=True, blank=True, help_text='The date the FWS reviewer signed off in "YYYY-MM-DD" format')
-    priority = models.BooleanField(default=False, help_text="A boolean value indicating if the case is a priority")
-    on_hold = models.BooleanField(default=False, help_text="A boolean value indicating if the case is on hold")
-    invalid = models.BooleanField(default=False, help_text="A boolean value indicating if the case is invalid")
-    hard_copy_map_reviewed = models.BooleanField(default=False, help_text="A boolean value indicating if the hard copy of the system map has been reviewed")
-    tags = models.ManyToManyField('Tag', through='CaseTag', related_name='cases', help_text="A many to many relationship of tags based on a foreign key integer value identifying a tag")
-    # TODO: add requester fields here???
+                                     related_name='fws_reviewer', null=True, blank=True, help_text=case.fws_reviewer)
+    fws_reviewer_signoff_date = models.DateField(null=True, blank=True, help_text=case.fws_reviewer_signoff_date)
+    priority = models.BooleanField(default=False, help_text=case.priority)
+    on_hold = models.BooleanField(default=False, help_text=case.on_hold)
+    invalid = models.BooleanField(default=False, help_text=case.invalid)
+    hard_copy_map_reviewed = models.BooleanField(default=False, help_text=case.hard_copy_map_reviewed)
+    tags = models.ManyToManyField('Tag', through='CaseTag', related_name='cases', help_text=case.tags)
 
     def __str__(self):
         return self.case_number
@@ -179,13 +179,13 @@ class CaseFile(HistoryModel):
             return 'casefiles/{0}/{1}'.format(instance.case, filename)
 
     name = property(_get_filename)
-    file = models.FileField(upload_to=casefile_location, help_text='The file path of the uploaded file, which is used to find the file name')
-    case = models.ForeignKey('Case', on_delete=models.PROTECT, related_name='casefiles', help_text='A foreign key integer value identifying the case')
-    from_requester = models.BooleanField(default=False, help_text='A boolean value indicating if the file is from the requester')
-    final_letter = models.BooleanField(default=False, help_text='A boolean value indicating if the file is the final letter')
+    file = models.FileField(upload_to=casefile_location, help_text=casefile.file)
+    case = models.ForeignKey('Case', on_delete=models.PROTECT, related_name='casefiles', help_text=casefile.case)
+    from_requester = models.BooleanField(default=False, help_text=casefile.from_requester)
+    final_letter = models.BooleanField(default=False, help_text=casefile.final_letter)
     uploader = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True, blank=True,
-                                 related_name="casefiles", help_text='A foreign key integer value identifying the user uploading the file')
-    uploaded_date = models.DateField(auto_now_add=True, null=True, blank=True, help_text='The date the file was uploaded in "YYYY-MM-DD" format')
+                                 related_name="casefiles", help_text=casefile.uploader)
+    uploaded_date = models.DateField(auto_now_add=True, null=True, blank=True, help_text=casefile.uploaded_date)
 
     def __str__(self):
         return str(self.name)
@@ -201,12 +201,12 @@ class Property(AddressModel):
     """
 
     # other fields for lot number, legal descriptions, lat/lon, etc, need to be discussed
-    legal_description = models.CharField(max_length=255, blank=True, help_text='The legal description of the property')
-    subdivision = models.CharField(max_length=255, blank=True, help_text='The subdivision name of the property')
-    policy_number = models.CharField(max_length=255, blank=True, help_text='The policy number of the property')
+    legal_description = models.CharField(max_length=255, blank=True, help_text=address.legal_description)
+    subdivision = models.CharField(max_length=255, blank=True, help_text=address.subdivision)
+    policy_number = models.CharField(max_length=255, blank=True, help_text=address.policy_number)
 
     def __str__(self):
-        return self.street + ", " + self.unit + ", " + self.city + ", " + self.state + ", " + self.zipcode
+        return self.street + ", " + self.unit + ", " + self.city + ", " + self.state + " " + self.zipcode
 
     class Meta:
         db_table = "cbrs_property"
@@ -219,11 +219,11 @@ class Requester(AddressModel):
     Name and contact information of the person making the request for a determination.
     """
 
-    salutation = models.CharField(max_length=16, blank=True, help_text='Preferred salutation of the requester (e.g. Mrs.)')
-    first_name = models.CharField(max_length=255, blank=True, help_text="Requester's first name")
-    last_name = models.CharField(max_length=255, blank=True, help_text="Requester's last name")
-    organization = models.CharField(max_length=255, blank=True, help_text="Requester's organization")
-    email = models.CharField(max_length=255, blank=True, validators=[validators.EmailValidator], help_text="Requester's email")
+    salutation = models.CharField(max_length=16, blank=True, help_text=requester.salutation)
+    first_name = models.CharField(max_length=255, blank=True, help_text=requester.first_name)
+    last_name = models.CharField(max_length=255, blank=True, help_text=requester.last_name)
+    organization = models.CharField(max_length=255, blank=True, help_text=requester.organization)
+    email = models.CharField(max_length=255, blank=True, validators=[validators.EmailValidator], help_text=requester.email)
 
     def __str__(self):
         return self.first_name + " " + self.last_name
@@ -246,8 +246,8 @@ class CaseTag(HistoryModel):
     Table to allow many-to-many relationship between Cases and Tags.
     """
 
-    case = models.ForeignKey('Case', on_delete=models.CASCADE, help_text='A foreign key integer value identifying a case')
-    tag = models.ForeignKey('Tag', on_delete=models.CASCADE, help_text='A foreign key integer value identifying a tag')
+    case = models.ForeignKey('Case', on_delete=models.CASCADE, help_text=casetag.case)
+    tag = models.ForeignKey('Tag', on_delete=models.CASCADE, help_text=casetag.tag)
 
     def __str__(self):
         return str(self.case) + " - " + str(self.tag)
@@ -262,8 +262,8 @@ class Tag(HistoryModel):
     Terms or keywords used to describe, categorize, or group similar Cases for easier searching and reporting.
     """
 
-    name = models.CharField(max_length=255, unique=True, help_text='The tag name')
-    description = models.TextField(blank=True, help_text='A description of the tag')
+    name = models.CharField(max_length=255, unique=True, help_text=casetag.name)
+    description = models.TextField(blank=True, help_text=casetag.description)
 
     def __str__(self):
         return self.name
@@ -286,8 +286,8 @@ class Comment(HistoryModel):
     http://django-contrib-comments.readthedocs.org/en/latest/index.html
     """
 
-    comment = models.TextField(help_text='A comment about a case')
-    acase = models.ForeignKey('Case', on_delete=models.CASCADE, related_name='comments', help_text='A foreign key integer value identifying a case')
+    comment = models.TextField(help_text=casecomment.comment)
+    acase = models.ForeignKey('Case', on_delete=models.CASCADE, related_name='comments', help_text=casecomment.acase)
 
     def __str__(self):
         return self.comment
@@ -312,8 +312,8 @@ class Determination(HistoryModel):
     Property is always mentioned first, then the structure if necessary.
     """
 
-    determination = models.CharField(max_length=32, unique=True, help_text='Indicates the determination value ("In", "Out", etc.)')
-    description = models.TextField(blank=True, help_text='A description of the determination value')
+    determination = models.CharField(max_length=32, unique=True, help_text=casedetermination.determination)
+    description = models.TextField(blank=True, help_text=casedetermination.description)
 
     def __str__(self):
         return self.determination
@@ -327,13 +327,12 @@ class SystemUnit(HistoryModel):
     Lookup table for CBRS System Units.
     """
 
-    system_unit_number = models.CharField(max_length=16, unique=True, help_text='The alphanumeric system unit number (e.g. A1)')
-    system_unit_name = models.CharField(max_length=255, blank=True, help_text='The system unit name')
-    system_unit_type = models.ForeignKey('SystemUnitType', on_delete=models.PROTECT, help_text='A foreign key integer value identifying the system unit type')
+    system_unit_number = models.CharField(max_length=16, unique=True, help_text=systemunit.system_unit_number)
+    system_unit_name = models.CharField(max_length=255, blank=True, help_text=systemunit.system_unit_name)
+    system_unit_type = models.ForeignKey('SystemUnitType', on_delete=models.PROTECT, help_text=systemunit.unit_type)
     field_office = models.ForeignKey('FieldOffice', on_delete=models.PROTECT,
-                                     related_name='system_units', null=True, blank=True, help_text='A foreign key integer value identifying a field office')
-    system_maps = models.ManyToManyField('SystemMap', through='SystemUnitMap', related_name='system_units',
-                                        help_text='A many to many relationship of system maps based on a foreign key integer value identifying a system map')
+                                     related_name='system_units', null=True, blank=True, help_text=systemunit.field_office)
+    system_maps = models.ManyToManyField('SystemMap', through='SystemUnitMap', related_name='system_units', help_text=systemunit.system_maps)
 
     def __str__(self):
         return self.system_unit_number
@@ -348,7 +347,7 @@ class SystemUnitType(HistoryModel):
     Lookup table for Types for System Units.
     """
 
-    unit_type = models.CharField(max_length=16, unique=True, help_text='An abbreviation of the system unit type (e.g. CBRS or OPA)')
+    unit_type = models.CharField(max_length=16, unique=True, help_text=systemunit.unit_type_string)
 
     def __str__(self):
         return self.unit_type
@@ -363,8 +362,8 @@ class SystemUnitProhibitionDate(HistoryModel):
     Lookup table for Prohibition Dates for System Units.
     """
 
-    prohibition_date = models.DateField(help_text='The flood insurance prohibition date in "YYYY-MM-DD" format')
-    system_unit = models.ForeignKey('SystemUnit', on_delete=models.CASCADE, related_name='prohibition_dates', help_text='A foreign key integer value identifying a system unit the prohibition was placed on')
+    prohibition_date = models.DateField(help_text=prohibitiondate.prohibition_date)
+    system_unit = models.ForeignKey('SystemUnit', on_delete=models.CASCADE, related_name='prohibition_dates', help_text=prohibitiondate.system_unit)
 
     def __str__(self):
         return self.prohibition_date
@@ -380,8 +379,8 @@ class SystemUnitMap(HistoryModel):
     Table to allow many-to-many relationship between System Units and Maps.
     """
 
-    system_unit = models.ForeignKey('SystemUnit', on_delete=models.CASCADE, help_text='A foreign key integer value identifying a system unit')
-    system_map = models.ForeignKey('SystemMap', on_delete=models.CASCADE, help_text='A foreign key integer value identifying a system map')
+    system_unit = models.ForeignKey('SystemUnit', on_delete=models.CASCADE, help_text=systemunitmap.system_unit)
+    system_map = models.ForeignKey('SystemMap', on_delete=models.CASCADE, help_text=systemunitmap.system_map)
 
     def __str__(self):
         return str(self.system_unit) + " - " + str(self.system_map)
@@ -396,10 +395,10 @@ class SystemMap(HistoryModel):
     Lookup table for Maps for System Units.
     """
 
-    map_number = models.CharField(max_length=16, help_text='The system map number')
-    map_title = models.CharField(max_length=255, blank=True, help_text='The title of the system map')
-    map_date = models.DateField(help_text='The system map date in "YYYY-MM-DD" format')
-    effective = models.BooleanField(default=True, help_text='A boolean value indicating if the map is effective')
+    map_number = models.CharField(max_length=16, help_text=systemunitmap.map_number)
+    map_title = models.CharField(max_length=255, blank=True, help_text=systemunitmap.map_title)
+    map_date = models.DateField(help_text=systemunitmap.map_date)
+    effective = models.BooleanField(default=True, help_text=systemunitmap.effective)
 
     def __str__(self):
         return self.map_number
@@ -414,12 +413,12 @@ class FieldOffice(HistoryModel):
     Lookup table for Field Offices for System Units.
     """
 
-    field_office_number = models.CharField(max_length=16, unique=True, help_text='A number indicating the id of the field office')
-    field_office_name = models.CharField(max_length=255, blank=True, help_text='The name of the field office')
-    field_agent_name = models.CharField(max_length=255, blank=True, help_text='The name of the agent representing the field office')
-    field_agent_email = models.CharField(max_length=255, blank=True, validators=[validators.EmailValidator], help_text="The field office agent's email")
-    city = models.CharField(max_length=255, blank=True, help_text='The city where the field office is located')
-    state = USStateField(null=True, blank=True, help_text='The state in which the field office is located')
+    field_office_number = models.CharField(max_length=16, unique=True, help_text=fieldoffice.field_office_number)
+    field_office_name = models.CharField(max_length=255, blank=True, help_text=fieldoffice.field_office_name)
+    field_agent_name = models.CharField(max_length=255, blank=True, help_text=fieldoffice.field_agent_name)
+    field_agent_email = models.CharField(max_length=255, blank=True, validators=[validators.EmailValidator], help_text=fieldoffice.field_agent_email)
+    city = models.CharField(max_length=255, blank=True, help_text=fieldoffice.city)
+    state = USStateField(null=True, blank=True, help_text=fieldoffice.state)
 
     def __str__(self):
         return self.city + ", " + self.state

@@ -16,7 +16,7 @@
       ]
     },
 
-    "homepageURL": "cbrs.wim.usgs.gov/cbrsservices/",
+    "homepageURL": "https://cbrs.wim.usgs.gov/cbrsservices/",
     "downloadURL": "https://github.com/USGS-WiM/cbrsservices_django/archive/master.zip",
     "disclaimerURL": "https://github.com/USGS-WiM/cbrsservices_django/blob/master/DISCLAIMER.md",
     "repositoryUrl": "https://github.com/USGS-WiM/cbrsservices_django",
