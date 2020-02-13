@@ -12,6 +12,7 @@ from cbrsservices.models import *
 from cbrsservices.permissions import *
 from cbrsservices.renderers import *
 from cbrsservices.paginations import *
+from cbrsservices.authentication import *
 from cbrsservices.filters import *
 
 
@@ -854,7 +855,7 @@ class UserViewSet(HistoryViewSet):
 
 
 class AuthView(views.APIView):
-    authentication_classes = (authentication.BasicAuthentication,)
+    authentication_classes = (CustomBasicAuthentication,)
     serializer_class = UserSerializer
 
     def post(self, request):
