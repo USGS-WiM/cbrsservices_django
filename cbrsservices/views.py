@@ -298,7 +298,7 @@ class CaseFileViewSet(HistoryViewSet):
     def perform_create(self, serializer):
 
         def get_user():
-            if self.request.user.is_anonymous():
+            if self.request.user.is_anonymous:
                 return None
             else:
                 return self.request.user

@@ -171,12 +171,12 @@ class CaseFile(HistoryModel):
         """Returns the name of the file"""
         return '%s' % str(self.file).split('/')[-1]
 
-    def casefile_location(self, instance, filename):
+    def casefile_location(self, filename):
         """Returns a custom location for the case file, in a folder named for its case"""
-        if not instance.uploader_id:
-            return 'casefiles/{0}/requester/{1}'.format(instance.case, filename)
+        if not self.uploader_id:
+            return 'casefiles/{0}/requester/{1}'.format(self.case, filename)
         else:
-            return 'casefiles/{0}/{1}'.format(instance.case, filename)
+            return 'casefiles/{0}/{1}'.format(self.case, filename)
 
     name = property(_get_filename)
     file = models.FileField(upload_to=casefile_location, help_text=casefile.file)
