@@ -5,7 +5,7 @@ django-simple-history==2.8.0
 djangorestframework==3.11.0
 django-filter==2.2.0
 djangorestframework-csv==2.1.0
-lxml==4.5.0
+lxml==4.9.1
 psycopg2==2.8.4
 python-docx==0.8.10
 python-magic==0.4.15
