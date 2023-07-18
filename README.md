@@ -1,3 +1,6 @@
+# THIS REPO IS ARCHIVED
+## Please visit https://code.usgs.gov/WiM/cbrsservices for the active repo of this project.
+
 CBRS Services Django
 ====
 
